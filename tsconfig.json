@@ -17,6 +17,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "observable-webworker": [
+        "dist/observable-webworker"
+      ],
+      "observable-webworker/*": [
+        "dist/observable-webworker/*"
+      ]
+    }
   }
 }
