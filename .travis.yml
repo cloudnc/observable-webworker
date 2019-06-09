@@ -8,7 +8,6 @@ cache: yarn
 
 install:
   - yarn --frozen-lockfile --non-interactive --no-progress
-  - yarn global add http-server-spa
 
 script:
   # lint

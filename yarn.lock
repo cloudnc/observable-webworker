@@ -4183,6 +4183,13 @@ http-proxy@^1.13.0, http-proxy@^1.17.0:
     follow-redirects "^1.0.0"
     requires-port "^1.0.0"
 
+http-server-spa@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/http-server-spa/-/http-server-spa-1.3.0.tgz#2892c0ade750e1c3826b3589744e1c17c46aa6a5"
+  integrity sha512-NfXBksDzoiBOo1IrMDtxpKJ8FOHLqy0YdijYjqMoRcS7AWPf6MzhRvKe2KiXxENlqTRqkOH418SvbxC6GzG2TA==
+  dependencies:
+    mime "^1.3.4"
+
 http-signature@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-1.2.0.tgz#9aecd925114772f3d95b65a60abb8f7c18fbace1"
@@ -5866,7 +5873,7 @@ mime-types@^2.1.12, mime-types@~2.1.17, mime-types@~2.1.19, mime-types@~2.1.24:
   dependencies:
     mime-db "1.40.0"
 
-mime@1.6.0, mime@^1.4.1:
+mime@1.6.0, mime@^1.3.4, mime@^1.4.1:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.6.0.tgz#32cd9e5c64553bd58d19a568af452acff04981b1"
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
