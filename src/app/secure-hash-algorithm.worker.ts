@@ -12,11 +12,13 @@ export class SecureHashAlgorithmWorker implements DoWork<Blob, string> {
       take(1),
       switchMap(message => this.readFileAsArrayBuffer(message.payload)),
       switchMap(arrayBuffer => crypto.subtle.digest('SHA-512', arrayBuffer)),
-      map((digest: ArrayBuffer): ShaOutputMessage => {
-        return {
-          payload: this.arrayBufferToHex(digest),
-        };
-      }),
+      map(
+        (digest: ArrayBuffer): ShaOutputMessage => {
+          return {
+            payload: this.arrayBufferToHex(digest),
+          };
+        },
+      ),
     );
   }
 
