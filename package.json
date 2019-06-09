@@ -30,7 +30,7 @@
     "lint:fix": "yarn demo:lint:fix && yarn prettier:write",
     "test": "yarn lib:test:watch",
     "start": "yarn demo:start",
-    "commit": "git-cz"
+    "commit": "git add . && git-cz"
   },
   "dependencies": {
     "@angular/animations": "~8.0.0",
