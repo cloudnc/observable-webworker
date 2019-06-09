@@ -54,11 +54,9 @@ const output = sourceText.replace(/```([\S]*)$\n([\s\S]*?)\n?```/gm, (substr: st
     outputCode = lines.slice(+startLine - 1, +endLine).join('\n');
   }
 
-  return `
-\`\`\`${extension}
-${outputCode}
-\`\`\`
-  `;
+  return `\`\`\`${extension}
+${outputCode.trim()}
+\`\`\``;
 });
 
 console.log(output);
