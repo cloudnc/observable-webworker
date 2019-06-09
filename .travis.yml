@@ -33,8 +33,7 @@ script:
 deploy:
   - provider: script
     skip_cleanup: true
-    script:
-      - yarn semantic-release
+    script: cd dist/observable-webworker && yarn semantic-release
     on:
       branch: master
   - provider: pages
