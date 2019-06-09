@@ -1,0 +1,42 @@
+sudo: false
+
+language: node_js
+node_js:
+  - '10'
+
+cache: yarn
+
+install:
+  - yarn --frozen-lockfile --non-interactive --no-progress
+  - yarn global add http-server-spa
+
+script:
+  # lint
+  - yarn run demo:lint:check
+  - yarn run prettier:check
+  # tests
+#  - yarn run lib:test:ci
+  # build
+  - yarn run lib:build:prod
+  - yarn run demo:build:prod --progress=false --base-href "https://cloudnc.github.io/observable-worker/"
+  # e2e tests
+  - sed -i 's/<base href="https:\/\/cloudnc.github.io\/observable-worker\/">/<base href="\/">/g' dist/observable-worker-demo/index.html
+  - cd ./dist/observable-worker-demo
+  - nohup http-server-spa . index.html 4765 &
+  - cd ../..
+  - sleep 5
+#  - yarn run demo:test:e2e:ci
+  - sed -i 's/<base href="\/">/<base href="https:\/\/cloudnc.github.io\/observable-worker\/">/g' dist/observable-worker-demo/index.html
+
+  # publish to npm
+  - yarn global add cpy-cli --ignore-engines
+  - cpy README.md dist/observable-worker
+  - test $TRAVIS_BRANCH = "master" && yarn run semantic-release || echo "Skipping deploy"
+
+deploy:
+  skip_cleanup: true
+  provider: pages
+  github_token: $GH_TOKEN
+  local_dir: dist/observable-worker-demo
+  on:
+    branch: master
