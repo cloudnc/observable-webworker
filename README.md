@@ -24,11 +24,11 @@ yarn add observable-webworker
 ```ts
 // hello.worker.ts
 
-import { ObservableWebworker, DoWork, GenericWorkerMessage } from 'observable-webworker';
+import { ObservableWorker, DoWork, GenericWorkerMessage } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-@ObservableWebworker()
+@ObservableWorker()
 class HelloWorker implements DoWork<string, string> {
   public work(input$: Observable<GenericWorkerMessage<string>>): Observable<GenericWorkerMessage<string>> {
     return input$.pipe(
@@ -45,11 +45,11 @@ class HelloWorker implements DoWork<string, string> {
 
 ```ts
 // hello.ts
-import { createWorker } from 'observable-webworker';
+import { fromWorker } from 'observable-webworker';
 import { of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-createWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }, of('Hello from main thread')).pipe(
+fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }, of('Hello from main thread')).pipe(
   map(res => res.payload),
 ).subscribe(message => {
   console.log(message); // Outputs 'Hello from webworker'
@@ -60,12 +60,12 @@ createWorker<string, string>(() => new Worker('./hello.worker', { type: 'module'
 ### Don't like decorators? Don't use em!
 
 If decorators is not something you use regularly and prefer direct functions, simply
-use the `runWebWorker` function instead.
+use the `runWorker` function instead.
 
 ```ts
 // hello.worker.ts
 
-import { runWebWorker, DoWork, GenericWorkerMessage } from 'observable-webworker';
+import { runWorker, DoWork, GenericWorkerMessage } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -82,5 +82,5 @@ class HelloWorker implements DoWork<string, string> {
   }
 }
 
-runWebWorker(HelloWorker);
+runWorker(HelloWorker);
 ```

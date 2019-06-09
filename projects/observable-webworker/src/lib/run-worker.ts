@@ -1,15 +1,15 @@
 import { fromEvent, Notification } from 'rxjs';
 import { dematerialize, map, materialize } from 'rxjs/operators';
-import { DoWork, GenericWorkerMessage, WorkerMessageNotification } from './observable-webworker.types';
+import { DoWork, GenericWorkerMessage, WorkerMessageNotification } from './observable-worker.types';
 
 export type ObservableWorkerConstructor<I = any, O = any> = new (...args) => DoWork<I, O>;
 
-export type WebworkerPostMessageNotification<T> = (
+export type WorkerPostMessageNotification<T> = (
   message: Notification<GenericWorkerMessage<T>>,
   tranferables?: Transferable[],
 ) => void;
 
-export function runWebWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I, O>) {
+export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I, O>) {
   const input$ = fromEvent(self, 'message').pipe(
     map((e: WorkerMessageNotification<I>): Notification<GenericWorkerMessage<I>> => e.data),
     map((n: Notification<GenericWorkerMessage<I>>) => new Notification(n.kind, n.value, n.error)),
@@ -22,6 +22,6 @@ export function runWebWorker<I, O>(workerConstructor: ObservableWorkerConstructo
     .subscribe((notification: Notification<GenericWorkerMessage<O>>) => {
       const transferables = notification.hasValue ? notification.value.transferables : undefined;
       // type to workaround typescript trying to compile as non-webworker context
-      ((postMessage as unknown) as WebworkerPostMessageNotification<O>)(notification, transferables);
+      ((postMessage as unknown) as WorkerPostMessageNotification<O>)(notification, transferables);
     });
 }

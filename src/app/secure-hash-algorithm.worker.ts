@@ -1,11 +1,11 @@
 import { Observable } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
-import { DoWork, ObservableWebWorker, GenericWorkerMessage } from '../../projects/observable-webworker/src/public-api';
+import { DoWork, ObservableWorker, GenericWorkerMessage } from '../../projects/observable-webworker/src/public-api';
 
 export type ShaInputMessage = GenericWorkerMessage<Blob>;
 export type ShaOutputMessage = GenericWorkerMessage<string>;
 
-@ObservableWebWorker()
+@ObservableWorker()
 export class SecureHashAlgorithmWorker implements DoWork<Blob, string> {
   public work(input$: Observable<ShaInputMessage>): Observable<ShaOutputMessage> {
     return input$.pipe(

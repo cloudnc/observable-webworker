@@ -1,8 +1,8 @@
 import { Observable, Observer, Subscription, Notification } from 'rxjs';
 import { dematerialize, map, materialize, tap } from 'rxjs/operators';
-import { GenericWorkerMessage, WorkerMessageNotification } from './observable-webworker.types';
+import { GenericWorkerMessage, WorkerMessageNotification } from './observable-worker.types';
 
-export function fromWebWorker<Input, Output>(
+export function fromWorker<Input, Output>(
   workerFactory: () => Worker,
   input$: Observable<GenericWorkerMessage<Input>>,
 ): Observable<GenericWorkerMessage<Output>> {

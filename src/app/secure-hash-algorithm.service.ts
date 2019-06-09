@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { fromWebWorker } from '../../projects/observable-webworker/src/lib/from-webworker';
-import { GenericWorkerMessage } from '../../projects/observable-webworker/src/lib/observable-webworker.types';
+import { fromWorker } from '../../projects/observable-webworker/src/lib/from-worker';
+import { GenericWorkerMessage } from '../../projects/observable-webworker/src/lib/observable-worker.types';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +14,7 @@ export class SecureHashAlgorithmService {
     });
     console.time('hashing file');
 
-    return fromWebWorker<Blob, string>(
+    return fromWorker<Blob, string>(
       () => new Worker('./secure-hash-algorithm.worker', { type: 'module' }),
       input$,
     ).pipe(
