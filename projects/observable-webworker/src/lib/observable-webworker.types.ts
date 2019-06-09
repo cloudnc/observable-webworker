@@ -1,4 +1,4 @@
-import { Notification } from 'rxjs';
+import { Notification, Observable } from 'rxjs';
 
 export interface GenericWorkerMessage<P = any> {
   payload: P;
@@ -7,4 +7,8 @@ export interface GenericWorkerMessage<P = any> {
 
 export interface WorkerMessageNotification<T> extends MessageEvent {
   data: Notification<GenericWorkerMessage<T>>;
+}
+
+export interface DoWork<I, O> {
+  work(input$: Observable<GenericWorkerMessage<I>>): Observable<GenericWorkerMessage<O>>;
 }
