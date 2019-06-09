@@ -26,6 +26,7 @@
     "lib:test:ci": "yarn run ng test --project observable-webworker --watch false",
     "------------------ RELEASE COMMANDS ------------------": "",
     "semantic-release": "semantic-release",
+    "readme:build": "ts-node --skip-project markdown-code-embed.ts README.md dist/observable-webworker/README.md",
     "------------------ QUICK COMMANDS ------------------": "",
     "lint:fix": "yarn demo:lint:fix && yarn prettier:write",
     "test": "yarn lib:test:watch",
