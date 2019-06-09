@@ -30,7 +30,6 @@
     "test": "yarn lib:test:watch",
     "start": "yarn demo:start"
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "~8.0.0",
     "@angular/common": "~8.0.0",
