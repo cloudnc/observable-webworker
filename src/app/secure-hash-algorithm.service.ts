@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { fromWebWorker } from '../../projects/observable-webworker/src/lib/from-webworker.function';
+import { fromWebWorker } from '../../projects/observable-webworker/src/lib/from-webworker';
 import { GenericWorkerMessage } from '../../projects/observable-webworker/src/lib/observable-webworker.types';
 
 @Injectable({
