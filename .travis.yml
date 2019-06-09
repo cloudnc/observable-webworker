@@ -27,8 +27,8 @@ script:
 #  - yarn run demo:test:e2e:ci
   - sed -i 's/<base href="\/">/<base href="https:\/\/cloudnc.github.io\/observable-webworker\/">/g' dist/observable-webworker-demo/index.html
 
+  - rm dist/observable-webworker/README.md && cp README.md dist/observable-webworker
   - cp LICENSE dist/observable-webworker
-  - yarn readme:build
 
 deploy:
   - provider: script

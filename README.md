@@ -21,19 +21,63 @@ yarn add observable-webworker
 
 ### Quickstart
 
-```src/readme/hello.ts
+```ts
+// hello.ts
+import { fromWorker } from 'observable-webworker';
+import { of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
+const input$ = of({ payload: 'Hello from main thread' });
+
+fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }), input$)
+  .pipe(map(res => res.payload))
+  .subscribe(message => {
+    console.log(message); // Outputs 'Hello from webworker'
+  });
 ```
 
-```src/readme/hello.worker.ts
+```ts
+// hello.worker.ts
 
+import { ObservableWorker, DoWork, GenericWorkerMessage } from 'observable-webworker';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+@ObservableWorker()
+class HelloWorker implements DoWork<string, string> {
+  public work(input$: Observable<GenericWorkerMessage<string>>): Observable<GenericWorkerMessage<string>> {
+    return input$.pipe(
+      map(message => {
+        console.log(message); // outputs 'Hello from main thread'
+        return {
+          payload: `Hello from webworker`,
+        };
+      }),
+    );
+  }
+}
 ```
 
-### Don't like decorators? Don't use em!
+### Don't like decorators? Don't use 'em!
 
 If decorators is not something you use regularly and prefer direct functions, simply
 use the `runWorker` function instead.
 
-```src/readme/hello-no-decorator.worker.ts#L4-L20
+```ts
+import { runWorker, DoWork, GenericWorkerMessage } from 'observable-webworker';
 
+class HelloWorker implements DoWork<string, string> {
+  public work(input$: Observable<GenericWorkerMessage<string>>): Observable<GenericWorkerMessage<string>> {
+    return input$.pipe(
+      map(message => {
+        console.log(message); // outputs 'Hello from main thread'
+        return {
+          payload: `Hello from webworker`,
+        };
+      }),
+    );
+  }
+}
+
+runWorker(HelloWorker);
 ```
