@@ -4,11 +4,13 @@ import { DoTransferableWork, DoWork, GenericWorkerMessage, WorkerMessageNotifica
 
 export type ObservableWorkerConstructor<I = any, O = any> = new (...args) => DoWork<I, O>;
 
+/** @internal */
 export type WorkerPostMessageNotification<T> = (
   message: Notification<GenericWorkerMessage<T>>,
   tranferables?: Transferable[],
 ) => void;
 
+/** @internal */
 export function workerIsTransferableType<I, O>(worker: DoWork<I, O>): worker is DoTransferableWork<I, O> {
   return !!worker.selectTransferables;
 }

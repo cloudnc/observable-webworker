@@ -1,6 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import { map, switchMap, take, tap } from 'rxjs/operators';
-import { DoWork, ObservableWorker } from '../../projects/observable-webworker/src/public-api';
+import { DoWork, ObservableWorker } from 'observable-webworker';
 
 @ObservableWorker()
 export class SecureHashAlgorithmWorker implements DoWork<Blob, string> {

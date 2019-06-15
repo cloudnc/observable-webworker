@@ -1,10 +1,12 @@
 import { Notification, Observable } from 'rxjs';
 
+/** @internal */
 export interface GenericWorkerMessage<P = any> {
   payload: P;
   transferables?: Transferable[];
 }
 
+/** @internal */
 export interface WorkerMessageNotification<T> extends MessageEvent {
   data: Notification<GenericWorkerMessage<T>>;
 }
@@ -14,4 +16,7 @@ export interface DoWork<I, O> {
   selectTransferables?(output: O): Transferable[];
 }
 
-export type DoTransferableWork<I, O> = Required<DoWork<I, O>>;
+// same as DoWork, but selectTransferables is required
+export interface DoTransferableWork<I, O> extends DoWork<I, O> {
+  selectTransferables(output: O): Transferable[];
+}
