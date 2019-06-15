@@ -54,7 +54,6 @@ const input$ = of('Hello from main thread');
 fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }), input$).subscribe(message => {
   console.log(message); // Outputs 'Hello from webworker'
 });
-
 ```
 
 #### Worker Thread
@@ -77,7 +76,6 @@ class HelloWorker implements DoWork<string, string> {
     );
   }
 }
-
 ```
 
 ### Don't like decorators? Don't use 'em!
@@ -100,7 +98,6 @@ class HelloWorker implements DoWork<string, string> {
 }
 
 runWorker(HelloWorker);
-
 ```
 
 ## Transferable
@@ -122,6 +119,7 @@ main/worker thread.
 If the main thread is transferring `Transferable`s _to the worker_, simply add a callback to the `fromWorker` function
 call to select which elements of the input stream are transferable.
 
+<!-- prettier-ignore -->
 ```ts
 // src/readme/transferable.main.ts#L7-L11
 

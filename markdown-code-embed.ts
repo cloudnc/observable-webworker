@@ -33,17 +33,60 @@ const [proc, thisFile, source] = process.argv;
 
 const sourceText = readFileSync(source, 'utf-8');
 
+type FilenameFromCommentReader = (line: string) => string | null;
+
+enum SupportedFileType {
+  TYPESCRIPT = 'ts',
+  HTML = 'html',
+}
+
+const filetypeCommentReaders: Record<SupportedFileType, FilenameFromCommentReader> = {
+  [SupportedFileType.TYPESCRIPT]: line => {
+    const match = line.match(/^\/\/\s?(\S*?$)/m);
+    if (!match) {
+      return null;
+    }
+
+    return match[1];
+  },
+  [SupportedFileType.HTML]: line => {
+    const match = line.match(/<!--\s*?(\S*?)\s*?-->/);
+    if (!match) {
+      return null;
+    }
+
+    return match[1];
+  },
+};
+
 /**
  * Match a codefence, capture groups around the file extension (optional) and first line starting with // (optional)
  */
-const codeFenceMatcher: RegExp = /```([\S]*)$\n(\/\/[\s\S]*?$)?([\s\S]*?)\n?```/gm;
+const codeFenceMatcher: RegExp = /```([\S]*)$\n([\s\S]*?$)?([\s\S]*?)\n?```/gm;
 
 const output = sourceText.replace(codeFenceMatcher, (substr: string, codeExtension: string, firstLine?: string) => {
-  if (!firstLine) {
+  if (!firstLine || !codeExtension) {
     return substr;
   }
 
-  const matches = firstLine.match(/\s?(\S+?)((#L(\d+)-L(\d+))|$)/m);
+  const supportedFileTypes = Object.keys(SupportedFileType).map(k => SupportedFileType[k]);
+
+  if (supportedFileTypes.indexOf(codeExtension) < 0) {
+    console.warn(
+      `Unsupported file extension [${codeExtension}], supported extensions are ${supportedFileTypes.join(
+        ', ',
+      )}, skipping code block`,
+    );
+    return substr;
+  }
+
+  const commentedFilename = filetypeCommentReaders[codeExtension](firstLine);
+
+  if (!commentedFilename) {
+    return substr;
+  }
+
+  const matches = commentedFilename.match(/\s?(\S+?)((#L(\d+)-L(\d+))|$)/m);
 
   if (!matches) {
     return substr;
@@ -52,6 +95,7 @@ const output = sourceText.replace(codeFenceMatcher, (substr: string, codeExtensi
   const [_, filename, __, lineNumbering, startLine, endLine] = matches;
 
   if (!existsSync(filename)) {
+    console.warn(`Found filename ${filename} in comment in first line, but file does not exist at that location!`);
     return substr;
   }
 
