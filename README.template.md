@@ -21,8 +21,10 @@ Simple API for using web workers with rxjs
 - Unopinionated on stream switching behavior, feel free to use `mergeMap`, `switchMap` or `exhaustMap` in your worker if
   the input stream outputs multiple items that generate their own stream of results
 - Built in interfaces for handling [`Transferable`](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) parts
-  of message payloads so large binaries can transferred efficiently without copying - See [Transferable](#transferable) 
+  of message payloads so large binaries can transferred efficiently without copying - See [Transferable](#transferable)
   section for usage
+- Automatic destruction of worker on unsubscription of output stream, this allows for smart cancelling of computation
+  using `switchMap` operator, or parallelisation of computation with `mergeMap`
 
 ## Install
 
@@ -61,25 +63,33 @@ use the `runWorker` function instead.
 ```
 
 ## Transferable
-If either your input or output (or both!) streams are passing large messages to or from the worker, it is highly 
-recommended to use message types that implement the [Transferable](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) 
-interface (`ArrayBuffer`, `MessagePort`, `ImageBitmap`). 
 
-Bear in mind that when transfering a message to a webworker that the main thread relinquishes ownership of the data. 
+If either your input or output (or both!) streams are passing large messages to or from the worker, it is highly
+recommended to use message types that implement the [Transferable](https://developer.mozilla.org/en-US/docs/Web/API/Transferable)
+interface (`ArrayBuffer`, `MessagePort`, `ImageBitmap`).
 
-Recommended reading: 
- - https://developer.mozilla.org/en-US/docs/Web/API/Transferable
- - https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
+Bear in mind that when transferring a message to a webworker that the main thread relinquishes ownership of the data.
 
-To use `Transferable`s with observable-worker, a slightly more complex interface is provided:
+Recommended reading:
 
-```projects/observable-webworker/src/lib/observable-worker.types.ts#L3-L6
+- https://developer.mozilla.org/en-US/docs/Web/API/Transferable
+- https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
+
+To use `Transferable`s with observable-worker, a slightly more complex interface is provided for both sides of the
+main/worker thread.
+
+If the main thread is transferring `Transferable`s _to the worker_, simply add a callback to the `fromWorker` function
+call to select which elements of the input stream are transferable.
+
+```src/readme/transferable.main.ts#L7-L11
+
 ```
 
-Additionally, rather than using `fromWorker` on the main thread, you'll use `fromTransferableWorker`, and in the 
-webworker you'll implement `DoTransferableWork`.
+If the worker is transferring `Transferable`s _to the main thread_ simply implement `DoTransferableWork`, which will
+require you to add an additional method `selectTransferables?(output: O): Transferable[];` which you implement to select
+which elements of the output object are `Transferable`.
 
 Both strategies are compatible with each other, so if for example you're computing the hash of a large `ArrayBuffer` in
-a worker, you would only need to use `fromTransferableWorker` in the main thread in order to mark the `ArrayBuffer` as 
-being transferable in the input. The library will handle the rest, and you can just use `DoWork` in the worker thread 
-with the method `work(input$: Observable<ArrayBuffer>): string;` 
+a worker, you would only need to use add the transferable selector callback in the main thread in order to mark the
+`ArrayBuffer` as being transferable in the input. The library will handle the rest, and you can just use `DoWork` in the
+worker thread, as the return type `string` is not `Transferable`.

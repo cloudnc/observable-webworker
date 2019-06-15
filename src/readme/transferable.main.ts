@@ -1,15 +1,12 @@
+import { fromWorker } from 'observable-webworker';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { fromTransferableWorker } from '../../projects/observable-webworker/src/lib/from-worker';
 
 export function computeHash(arrayBuffer: ArrayBuffer): Observable<string> {
-  const input$ = of({
-    payload: arrayBuffer,
-    transferables: [arrayBuffer]
-  });
+  const input$ = of(arrayBuffer);
 
-  return fromTransferableWorker<ArrayBuffer, string>(
+  return fromWorker<ArrayBuffer, string>(
     () => new Worker('./transferable.worker', { type: 'module' }),
     input$,
-  ).pipe(map(response => response.payload));
+    input => [input],
+  );
 }

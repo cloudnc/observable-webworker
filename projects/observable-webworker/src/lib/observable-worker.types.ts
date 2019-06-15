@@ -11,8 +11,7 @@ export interface WorkerMessageNotification<T> extends MessageEvent {
 
 export interface DoWork<I, O> {
   work(input$: Observable<I>): Observable<O>;
+  selectTransferables?(output: O): Transferable[];
 }
 
-export interface DoTransferableWork<I, O> {
-  transferableWork(input$: Observable<GenericWorkerMessage<I>>): Observable<GenericWorkerMessage<O>>;
-}
+export type DoTransferableWork<I, O> = Required<DoWork<I, O>>;
