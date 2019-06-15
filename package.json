@@ -26,7 +26,7 @@
     "lib:test:ci": "yarn run ng test --project observable-webworker --watch false",
     "------------------ RELEASE COMMANDS ------------------": "",
     "semantic-release": "semantic-release",
-    "readme:build": "ts-node --skip-project markdown-code-embed.ts README.template.md README.md",
+    "readme:build": "ts-node --skip-project markdown-code-embed.ts README.md",
     "readme:check": "yarn readme:build && ! git status | grep README.md || (echo 'You must commit build and commit changes to README.md!' && exit 1)",
     "------------------ QUICK COMMANDS ------------------": "",
     "lint:fix": "yarn demo:lint:fix && yarn prettier:write",
