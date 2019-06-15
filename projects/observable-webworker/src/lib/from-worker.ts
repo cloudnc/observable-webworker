@@ -4,8 +4,9 @@ import { GenericWorkerMessage, WorkerMessageNotification } from './observable-wo
 
 export function fromWorker<Input, Output>(
   workerFactory: () => Worker,
-  input$: Observable<GenericWorkerMessage<Input>>,
-): Observable<GenericWorkerMessage<Output>> {
+  input$: Observable<Input>,
+  selectTransferables?: (input: Input) => Transferable[],
+): Observable<Output> {
   return new Observable((responseObserver: Observer<Notification<GenericWorkerMessage<Output>>>) => {
     let worker: Worker;
     let subscription: Subscription;
@@ -17,6 +18,15 @@ export function fromWorker<Input, Output>(
 
       subscription = input$
         .pipe(
+          map((payload: Input) => {
+            const message: GenericWorkerMessage<Input> = { payload };
+
+            if (selectTransferables) {
+              message.transferables = selectTransferables(payload);
+            }
+
+            return message;
+          }),
           materialize(),
           tap(input => worker.postMessage(input)),
         )
@@ -36,5 +46,6 @@ export function fromWorker<Input, Output>(
   }).pipe(
     map(({ kind, value, error }) => new Notification(kind, value, error)),
     dematerialize(),
+    map(message => message.payload),
   );
 }

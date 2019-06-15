@@ -1,8 +1,6 @@
 import { Observable, Subject } from 'rxjs';
-import { NotificationKind, Notification } from 'rxjs/internal/Notification';
-import { map } from 'rxjs/operators';
+import { Notification, NotificationKind } from 'rxjs/internal/Notification';
 import { fromWorker } from './from-worker';
-import { GenericWorkerMessage } from './observable-worker.types';
 
 describe('fromWorker', () => {
   let input$: Subject<number>;
@@ -11,7 +9,7 @@ describe('fromWorker', () => {
 
   let workerFactorySpy;
 
-  let stubbedWorkerStream: Observable<GenericWorkerMessage<number>>;
+  let stubbedWorkerStream: Observable<number>;
 
   beforeEach(() => {
     input$ = new Subject();
@@ -21,7 +19,7 @@ describe('fromWorker', () => {
     workerFactorySpy = jasmine.createSpy('workerFactorySpy');
     workerFactorySpy.and.returnValue(stubWorker);
 
-    stubbedWorkerStream = fromWorker<number, number>(workerFactorySpy, input$.pipe(map(payload => ({ payload }))));
+    stubbedWorkerStream = fromWorker<number, number>(workerFactorySpy, input$);
   });
 
   it('should construct a worker and post input notification messages to it', () => {
@@ -77,7 +75,7 @@ describe('fromWorker', () => {
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.NEXT, 1),
+        data: new Notification(NotificationKind.NEXT, { payload: 1 }),
       }),
     );
 
