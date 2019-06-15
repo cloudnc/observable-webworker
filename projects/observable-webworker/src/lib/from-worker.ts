@@ -2,7 +2,7 @@ import { Observable, Observer, Subscription, Notification } from 'rxjs';
 import { dematerialize, map, materialize, tap } from 'rxjs/operators';
 import { GenericWorkerMessage, WorkerMessageNotification } from './observable-worker.types';
 
-export function fromWorker<Input, Output>(
+export function fromTransferableWorker<Input, Output>(
   workerFactory: () => Worker,
   input$: Observable<GenericWorkerMessage<Input>>,
 ): Observable<GenericWorkerMessage<Output>> {
@@ -36,5 +36,11 @@ export function fromWorker<Input, Output>(
   }).pipe(
     map(({ kind, value, error }) => new Notification(kind, value, error)),
     dematerialize(),
+  );
+}
+
+export function fromWorker<Input, Output>(workerFactory: () => Worker, input$: Observable<Input>): Observable<Output> {
+  return fromTransferableWorker<Input, Output>(workerFactory, input$.pipe(map(payload => ({ payload })))).pipe(
+    map(message => message.payload),
   );
 }

@@ -21,7 +21,8 @@ Simple API for using web workers with rxjs
 - Unopinionated on stream switching behavior, feel free to use `mergeMap`, `switchMap` or `exhaustMap` in your worker if
   the input stream outputs multiple items that generate their own stream of results
 - Built in interfaces for handling [`Transferable`](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) parts
-  of message payloads so large binaries can transferred efficiently without copying
+  of message payloads so large binaries can transferred efficiently without copying - See [Transferable](#transferable) 
+  section for usage
 
 ## Install
 
@@ -58,3 +59,27 @@ use the `runWorker` function instead.
 ```src/readme/hello-no-decorator.worker.ts#L4-L20
 
 ```
+
+## Transferable
+If either your input or output (or both!) streams are passing large messages to or from the worker, it is highly 
+recommended to use message types that implement the [Transferable](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) 
+interface (`ArrayBuffer`, `MessagePort`, `ImageBitmap`). 
+
+Bear in mind that when transfering a message to a webworker that the main thread relinquishes ownership of the data. 
+
+Recommended reading: 
+ - https://developer.mozilla.org/en-US/docs/Web/API/Transferable
+ - https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
+
+To use `Transferable`s with observable-worker, a slightly more complex interface is provided:
+
+```projects/observable-webworker/src/lib/observable-worker.types.ts#L3-L6
+```
+
+Additionally, rather than using `fromWorker` on the main thread, you'll use `fromTransferableWorker`, and in the 
+webworker you'll implement `DoTransferableWork`.
+
+Both strategies are compatible with each other, so if for example you're computing the hash of a large `ArrayBuffer` in
+a worker, you would only need to use `fromTransferableWorker` in the main thread in order to mark the `ArrayBuffer` as 
+being transferable in the input. The library will handle the rest, and you can just use `DoWork` in the worker thread 
+with the method `work(input$: Observable<ArrayBuffer>): string;` 
