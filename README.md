@@ -54,6 +54,7 @@ const input$ = of('Hello from main thread');
 fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }), input$).subscribe(message => {
   console.log(message); // Outputs 'Hello from webworker'
 });
+
 ```
 
 #### Worker Thread
@@ -76,6 +77,7 @@ class HelloWorker implements DoWork<string, string> {
     );
   }
 }
+
 ```
 
 ### Don't like decorators? Don't use 'em!
@@ -84,7 +86,7 @@ If decorators is not something you use regularly and prefer direct functions, si
 use the `runWorker` function instead.
 
 ```ts
-// src/readme/hello-no-decorator.worker.ts#L5-L20
+// src/readme/hello-no-decorator.worker.ts#L5-L16
 
 class HelloWorker implements DoWork<string, string> {
   public work(input$: Observable<string>): Observable<string> {
