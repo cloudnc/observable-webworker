@@ -44,6 +44,8 @@ yarn add observable-webworker
 #### Main Thread
 
 ```ts
+// src/readme/hello.ts
+
 import { fromWorker } from 'observable-webworker';
 import { of } from 'rxjs';
 
@@ -52,11 +54,14 @@ const input$ = of('Hello from main thread');
 fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }), input$).subscribe(message => {
   console.log(message); // Outputs 'Hello from webworker'
 });
+
 ```
 
 #### Worker Thread
 
 ```ts
+// src/readme/hello.worker.ts
+
 import { DoWork, ObservableWorker } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -72,6 +77,7 @@ class HelloWorker implements DoWork<string, string> {
     );
   }
 }
+
 ```
 
 ### Don't like decorators? Don't use 'em!
@@ -80,6 +86,8 @@ If decorators is not something you use regularly and prefer direct functions, si
 use the `runWorker` function instead.
 
 ```ts
+// src/readme/hello-no-decorator.worker.ts#L5-L16
+
 class HelloWorker implements DoWork<string, string> {
   public work(input$: Observable<string>): Observable<string> {
     return input$.pipe(
@@ -113,10 +121,15 @@ main/worker thread.
 If the main thread is transferring `Transferable`s _to the worker_, simply add a callback to the `fromWorker` function
 call to select which elements of the input stream are transferable.
 
+<!-- prettier-ignore -->
 ```ts
-return fromWorker<ArrayBuffer, string>(() => new Worker('./transferable.worker', { type: 'module' }), input$, input => [
-  input,
-]);
+// src/readme/transferable.main.ts#L7-L11
+
+return fromWorker<ArrayBuffer, string>(
+  () => new Worker('./transferable.worker', { type: 'module' }),
+  input$,
+  input => [input],
+);
 ```
 
 If the worker is transferring `Transferable`s _to the main thread_ simply implement `DoTransferableWork`, which will
