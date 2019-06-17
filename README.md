@@ -26,6 +26,9 @@ Simple API for using web workers with rxjs
 - Automatic destruction of worker on unsubscription of output stream, this allows for smart cancelling of computation
   using `switchMap` operator, or parallelisation of computation with `mergeMap`
 
+## Tutorial
+https://dev.to/zakhenry/observable-webworkers-with-angular-8-4k6
+
 ## Install
 
 Install the [npm package](https://www.npmjs.com/package/observable-webworker): `observable-webworker`
