@@ -20,5 +20,9 @@
     "Webworker",
     "Webpack",
     "Multithread"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloudnc/observable-webworker.git"
+  }
 }
