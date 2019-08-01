@@ -70,7 +70,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @ObservableWorker()
-class HelloWorker implements DoWork<string, string> {
+export class HelloWorker implements DoWork<string, string> {
   public work(input$: Observable<string>): Observable<string> {
     return input$.pipe(
       map(message => {
@@ -83,7 +83,13 @@ class HelloWorker implements DoWork<string, string> {
 
 ```
 
-### Don't like decorators? Don't use 'em!
+##### Important Note
+You **must** export your worker class (`export class ...`) from the file if you're using a minifier. If you don't, your 
+class will be removed from the bundle, causing your worker to do nothing! 
+ 
+You'll probably need to export the class anyway as you are unit testing it right?!
+
+##### Don't like decorators? Don't use 'em!
 
 If decorators is not something you use regularly and prefer direct functions, simply
 use the `runWorker` function instead.
