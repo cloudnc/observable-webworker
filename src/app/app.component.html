@@ -3,6 +3,8 @@
   Demo
 </h1>
 
+<h2>Single Worker</h2>
+
 Select file to compute SHA-256 sum of, in webworker:
 <input type="file" (change)="calculateSha256($event)" />
 
@@ -19,3 +21,15 @@ Select file to compute SHA-256 sum of, in webworker:
   <code>mergeMap</code>
   would allow both files to complete hashing.
 </p>
+
+
+<hr>
+<h2>Multiple Worker Pool</h2>
+
+Select multiple files to compute SHA-256 sum of, in webworker:
+<input type="file" multiple (change)="calculateSha256Multiple($event)" />
+
+<h3>Events:</h3>
+<ol>
+  <li *ngFor="let event of eventListPool$ | async">{{ event }}</li>
+</ol>

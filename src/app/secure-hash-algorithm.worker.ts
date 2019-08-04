@@ -1,24 +1,26 @@
+import { ObservableWorker } from 'observable-webworker';
 import { Observable, Subject } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
-import { DoWork, ObservableWorker } from 'observable-webworker';
+import { map, switchMap, tap } from 'rxjs/operators';
+import { DoWorkUnit } from '../../projects/observable-webworker/src/lib/observable-worker.types';
 
 @ObservableWorker()
-export class SecureHashAlgorithmWorker implements DoWork<Blob, string> {
-  public work(input$: Observable<Blob>): Observable<string> {
+export class SecureHashAlgorithmWorker implements DoWorkUnit<File, string> {
+
+  public workUnit(input: File): Observable<string> {
     const output$: Subject<string> = new Subject();
 
-    input$
-      .pipe(
-        take(1),
-        tap(() => output$.next('received file')),
-        switchMap(message => this.readFileAsArrayBuffer(message)),
-        tap(() => output$.next('read file')),
-        switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
-        tap(() => output$.next('hashed file')),
-        map((digest: ArrayBuffer): string => 'hash result: ' + this.arrayBufferToHex(digest)),
-        tap(() => output$.next('sending hash back to main thread')),
-      )
-      .subscribe(output$);
+    output$.next(`received file ${input.name}`);
+    return this.readFileAsArrayBuffer(input).pipe(
+      tap(() => output$.next(`${input.name}: read file`)),
+      switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
+      tap(() => output$.next(`${input.name}: hashed file`)),
+      map((digest: ArrayBuffer): string => `${input.name}: hash result: ${this.arrayBufferToHex(digest)}`),
+      tap(() => output$.next(`${input.name}: sending hash back to main thread`)),
+      tap(out => {
+        output$.next(out);
+        output$.complete();
+      }),
+    );
 
     return output$;
   }
