@@ -8,9 +8,8 @@ describe('LogLineComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LogLineComponent ]
-    })
-    .compileComponents();
+      declarations: [LogLineComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -8,9 +8,8 @@ describe('MultipleWorkerPoolComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MultipleWorkerPoolComponent ]
-    })
-    .compileComponents();
+      declarations: [MultipleWorkerPoolComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

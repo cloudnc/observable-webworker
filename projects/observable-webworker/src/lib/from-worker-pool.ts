@@ -8,23 +8,29 @@ export function fromWorkerPool<I, O>(
   selectTransferables?: (input: I) => Transferable[],
   workerCount: number = navigator.hardwareConcurrency - 1,
 ): Observable<O> {
-
   const iterator = Array.isArray(workUnitIterator) ? workUnitIterator[Symbol.iterator]() : workUnitIterator;
 
   return new Observable<O>(resultObserver => {
-
-    const idleWorker$$: Subject<Worker> = new Subject();
+    const idleWorker$$: Subject<() => Worker> = new Subject();
 
     let completed = 0;
     let sent = 0;
     let finished = false;
 
-    const workers: Worker[] = Array.from({ length: workerCount }).map((_, i) => workerConstructor(i));
+    const lazyWorkers: (() => Worker)[] = Array.from({ length: workerCount }).map((_, i) => {
+      let worker: Worker;
+
+      return () => {
+        if (!worker) {
+          worker = workerConstructor(i);
+        }
+        return worker;
+      };
+    });
 
     const processor$ = idleWorker$$.pipe(
       mergeMap(
         (worker): Observable<O> => {
-
           const next = iterator.next();
 
           if (next.done) {
@@ -36,35 +42,36 @@ export function fromWorkerPool<I, O>(
           sent++;
           const unitWork: I = next.value;
 
-          return fromWorker<I, O>(() => worker, of(unitWork), selectTransferables, { terminateOnComplete: false }).pipe(
+          return fromWorker<I, O>(() => worker(), of(unitWork), selectTransferables, {
+            terminateOnComplete: false,
+          }).pipe(
             finalize(() => {
-              completed ++;
+              completed++;
 
               if (!idleWorker$$.closed) {
                 idleWorker$$.next(worker);
               }
 
-              if (finished && completed === sent){
-                resultObserver.complete();
+              if (finished) {
+                worker().terminate();
               }
 
-            })
+              if (finished && completed === sent) {
+                resultObserver.complete();
+              }
+            }),
           );
         },
       ),
     );
 
     const sub = processor$.subscribe({
-      next: (o) => resultObserver.next(o),
-      error: (e) => resultObserver.error(e),
+      next: o => resultObserver.next(o),
+      error: e => resultObserver.error(e),
     });
 
-    workers.forEach(w => idleWorker$$.next(w));
+    lazyWorkers.forEach(w => idleWorker$$.next(w));
 
-    return () => {
-      workers.forEach(w => w.terminate());
-      sub.unsubscribe();
-    }
-
+    return () => sub.unsubscribe();
   });
 }

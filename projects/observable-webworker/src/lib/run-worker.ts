@@ -53,7 +53,7 @@ export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I
     map((e: WorkerMessageNotification<I>): Notification<GenericWorkerMessage<I>> => e.data),
     map((n: Notification<GenericWorkerMessage<I>>) => new Notification(n.kind, n.value, n.error)),
     // ignore complete, the calling thread will manage termination of the stream
-    filter(n => n.kind != NotificationKind.COMPLETE),
+    filter(n => n.kind !== NotificationKind.COMPLETE),
     dematerialize(),
     map(i => i.payload),
   );

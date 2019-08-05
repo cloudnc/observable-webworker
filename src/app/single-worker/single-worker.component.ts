@@ -11,7 +11,6 @@ import { ShaWorkerMessage } from '../sha-worker.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SingleWorkerComponent {
-
   public events$: Subject<string> = new Subject();
   public eventList$: Observable<string[]> = this.events$.pipe(
     scan<string>((list, event) => {
@@ -44,5 +43,4 @@ export class SingleWorkerComponent {
       }),
     );
   }
-
 }

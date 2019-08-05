@@ -15,8 +15,29 @@ export class MultipleWorkerPoolComponent {
 
   public filenames$ = this.multiFilesToHash.pipe(map(files => files.map(f => f.name)));
 
+  public eventsPool$: Subject<ShaWorkerMessage> = new Subject();
+  public eventListPool$: Observable<ShaWorkerMessage[]> = this.eventsPool$.pipe(
+    groupBy(m => m.file),
+    mergeMap(fileMessage$ => {
+      return fileMessage$.pipe(
+        startWith(null),
+        pairwise(),
+        map(([a, b]) => {
+          return {
+            ...b,
+            millisSinceLast: a ? b.timestamp.valueOf() - a.timestamp.valueOf() : null,
+          };
+        }),
+      );
+    }),
+    scan<ShaWorkerMessage>((list, event) => {
+      list.push(event);
+      return list;
+    }, []),
+  );
+
   private *workPool(files: File[]): IterableIterator<File> {
-    for (let file of files) {
+    for (const file of files) {
       yield file;
       this.eventsPool$.next(this.logMessage(`file picked up for processing`, file.name));
     }
@@ -34,33 +55,9 @@ export class MultipleWorkerPoolComponent {
     );
   }
 
-  public eventsPool$: Subject<ShaWorkerMessage> = new Subject();
-  public eventListPool$: Observable<ShaWorkerMessage[]> = this.eventsPool$.pipe(
-    groupBy(m => m.file),
-    mergeMap((fileMessage$) => {
-      return fileMessage$.pipe(
-        startWith(null),
-        pairwise(),
-        map(([a, b]) => {
-
-          console.log(`ab`, a, b);
-
-          return {
-            ...b,
-            millisSinceLast: a ? b.timestamp.valueOf() - a.timestamp.valueOf(): null,
-          }
-        })
-      )
-    }),
-    scan<ShaWorkerMessage>((list, event) => {
-      list.push(event);
-      return list;
-    }, []),
-  );
-
   public calculateSha256Multiple($event): void {
     const files: File[] = Array.from($event.target.files);
-    for (let file of files) {
+    for (const file of files) {
       this.eventsPool$.next(this.logMessage('file selected', file.name));
     }
     this.multiFilesToHash.next(files);

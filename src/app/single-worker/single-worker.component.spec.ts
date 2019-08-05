@@ -8,9 +8,8 @@ describe('SingleWorkerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SingleWorkerComponent ]
-    })
-    .compileComponents();
+      declarations: [SingleWorkerComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
