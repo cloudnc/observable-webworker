@@ -3,15 +3,7 @@
   Demo
 </h1>
 
-<h2>Single Worker</h2>
-
-Select file to compute SHA-256 sum of, in webworker:
-<input type="file" (change)="calculateSha256($event)" />
-
-<h3>Events:</h3>
-<ol>
-  <li *ngFor="let event of eventList$ | async">{{ event }}</li>
-</ol>
+<app-single-worker></app-single-worker>
 
 <p>
   Note if you select a particularly large file (>1GB) you will have time to select another file and see that the
@@ -24,12 +16,5 @@ Select file to compute SHA-256 sum of, in webworker:
 
 
 <hr>
-<h2>Multiple Worker Pool</h2>
 
-Select multiple files to compute SHA-256 sum of, in webworker:
-<input type="file" multiple (change)="calculateSha256Multiple($event)" />
-
-<h3>Events:</h3>
-<ol>
-  <li *ngFor="let event of eventListPool$ | async">{{ event }}</li>
-</ol>
+<app-multiple-worker-pool></app-multiple-worker-pool>
