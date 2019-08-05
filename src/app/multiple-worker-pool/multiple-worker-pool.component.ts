@@ -40,6 +40,7 @@ export class MultipleWorkerPoolComponent {
     for (const file of files) {
       yield file;
       this.eventsPool$.next(this.logMessage(`file picked up for processing`, file.name));
+      console.log(`file picked up for processing`, file.name);
     }
   }
 
