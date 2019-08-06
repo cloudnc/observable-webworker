@@ -1,5 +1,5 @@
-import { EMPTY, Observable, of, Subject, zip } from 'rxjs';
-import { finalize, mergeMap, tap } from 'rxjs/operators';
+import { Observable, of, Subject, zip } from 'rxjs';
+import { finalize, map, mergeAll, tap } from 'rxjs/operators';
 import { ObservableInput } from 'rxjs/src/internal/types';
 import { fromWorker } from './from-worker';
 
@@ -11,12 +11,23 @@ interface LazyWorker {
   index: number;
 }
 
+export interface WorkerPoolOptions<I, O> {
+  workerCount?: number;
+  flattenOperator?: (input$: Observable<Observable<O>>) => Observable<O>;
+  selectTransferables?: (input: I) => Transferable[];
+}
+
 export function fromWorkerPool<I, O>(
   workerConstructor: (index: number) => Worker,
   workUnitIterator: ObservableInput<I>,
-  selectTransferables?: (input: I) => Transferable[],
-  workerCount: number = navigator.hardwareConcurrency - 1,
+  options?: WorkerPoolOptions<I, O>,
 ): Observable<O> {
+  const {
+    // tslint:disable-next-line:no-unnecessary-initializer
+    selectTransferables = undefined,
+    workerCount = navigator.hardwareConcurrency - 1,
+    flattenOperator = mergeAll<O>(),
+  } = options || {};
 
   return new Observable<O>(resultObserver => {
     const idleWorker$$: Subject<LazyWorker> = new Subject();
@@ -26,22 +37,20 @@ export function fromWorkerPool<I, O>(
     let finished = false;
 
     const lazyWorkers: LazyWorker[] = Array.from({ length: workerCount }).map((_, index) => {
-      let worker: Worker;
-
       return {
+        _cachedWorker: null,
         factory() {
-          if (!worker) {
-            worker = workerConstructor(index);
+          if (!this._cachedWorker) {
+            this._cachedWorker = workerConstructor(index);
             this.started = true;
           }
-          return worker;
+          return this._cachedWorker;
         },
         processing: false,
         terminated: false,
         started: false,
         index,
-      }
-
+      };
     });
 
     const processor$ = zip(idleWorker$$, workUnitIterator).pipe(
@@ -50,34 +59,27 @@ export function fromWorkerPool<I, O>(
         worker.processing = true;
       }),
       finalize(() => {
-        console.log(`now finished`);
         idleWorker$$.complete();
         finished = true;
         lazyWorkers.forEach(worker => {
           if (worker.started && !worker.processing) {
             worker.factory().terminate();
           }
-        })
+        });
       }),
-      mergeMap(
+      map(
         ([worker, unitWork]): Observable<O> => {
-
-          console.log(`starting work on`, (unitWork as any).name);
           return fromWorker<I, O>(() => worker.factory(), of(unitWork), selectTransferables, {
             terminateOnComplete: false,
           }).pipe(
             finalize(() => {
               completed++;
 
-              console.log(`*`, (unitWork as any).name, {completed, sent, finished});
-
               worker.processing = false;
 
-              if (!idleWorker$$.closed) {
+              if (!finished) {
                 idleWorker$$.next(worker);
-              }
-
-              if (finished) {
+              } else {
                 worker.factory().terminate();
               }
 
@@ -88,6 +90,7 @@ export function fromWorkerPool<I, O>(
           );
         },
       ),
+      flattenOperator,
     );
 
     const sub = processor$.subscribe({

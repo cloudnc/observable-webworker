@@ -4,8 +4,8 @@ Select multiple files to compute SHA-256 sum of, in webworker:
 <input type="file" multiple (change)="calculateSha256Multiple($event)" />
 
 <h3 [attr.data]="workResult$ | async">Events:</h3>
-<ol *ngIf="filenames$ | async as files">
+<ol>
   <li *ngFor="let event of eventListPool$ | async">
-    <app-log-line [message]="event" [files]="files"></app-log-line>
+    <app-log-line *ngIf="filenames$ | async as filenames" [message]="event" [files]="filenames"></app-log-line>
   </li>
 </ol>
