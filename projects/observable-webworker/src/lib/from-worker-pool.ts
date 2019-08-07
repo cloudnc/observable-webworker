@@ -5,6 +5,7 @@ import { fromWorker } from './from-worker';
 
 interface LazyWorker {
   factory: () => Worker;
+  terminate: (force?: boolean) => void;
   processing: boolean;
   terminated: boolean;
   started: boolean;
@@ -46,6 +47,14 @@ export function fromWorkerPool<I, O>(
           }
           return this._cachedWorker;
         },
+        terminate(force = false) {
+          if (force || (this.started && !this.processing)) {
+            if (!this.terminated) {
+              this._cachedWorker.terminate();
+            }
+            this.terminated = true;
+          }
+        },
         processing: false,
         terminated: false,
         started: false,
@@ -61,11 +70,7 @@ export function fromWorkerPool<I, O>(
       finalize(() => {
         idleWorker$$.complete();
         finished = true;
-        lazyWorkers.forEach(worker => {
-          if (worker.started && !worker.processing) {
-            worker.factory().terminate();
-          }
-        });
+        lazyWorkers.forEach(worker => worker.terminate());
       }),
       map(
         ([worker, unitWork]): Observable<O> => {
@@ -80,7 +85,7 @@ export function fromWorkerPool<I, O>(
               if (!finished) {
                 idleWorker$$.next(worker);
               } else {
-                worker.factory().terminate();
+                worker.terminate();
               }
 
               if (finished && completed === sent) {
@@ -93,10 +98,7 @@ export function fromWorkerPool<I, O>(
       flattenOperator,
     );
 
-    const sub = processor$.subscribe({
-      next: o => resultObserver.next(o),
-      error: e => resultObserver.error(e),
-    });
+    const sub = processor$.subscribe(resultObserver);
 
     lazyWorkers.forEach(w => idleWorker$$.next(w));
 
