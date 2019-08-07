@@ -1,6 +1,18 @@
 import { Component } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { groupBy, map, mergeMap, pairwise, scan, startWith, switchMap, tap } from 'rxjs/operators';
+import { Observable, ReplaySubject, Subject } from 'rxjs';
+import {
+  concatAll,
+  groupBy,
+  map,
+  mergeMap,
+  pairwise,
+  scan,
+  shareReplay,
+  startWith,
+  switchAll,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 import { fromWorkerPool } from '../../../projects/observable-webworker/src/lib/from-worker-pool';
 import { ShaWorkerMessage, Thread } from '../sha-worker.types';
 
@@ -10,10 +22,13 @@ import { ShaWorkerMessage, Thread } from '../sha-worker.types';
   styleUrls: ['./multiple-worker-pool.component.scss'],
 })
 export class MultipleWorkerPoolComponent {
-  public multiFilesToHash: Subject<File[]> = new Subject();
+  public multiFilesToHash: Subject<File[]> = new ReplaySubject(1);
   public workResult$ = this.multiFilesToHash.pipe(switchMap(files => this.hashMultipleFiles(files)));
 
-  public filenames$ = this.multiFilesToHash.pipe(map(files => files.map(f => f.name)));
+  public filenames$ = this.multiFilesToHash.pipe(
+    map(files => files.map(f => f.name)),
+    shareReplay(1),
+  );
 
   public eventsPool$: Subject<ShaWorkerMessage> = new Subject();
   public eventListPool$: Observable<ShaWorkerMessage[]> = this.eventsPool$.pipe(
@@ -40,6 +55,7 @@ export class MultipleWorkerPoolComponent {
     for (const file of files) {
       yield file;
       this.eventsPool$.next(this.logMessage(`file picked up for processing`, file.name));
+      console.log(`file picked up for processing`, file.name);
     }
   }
 
