@@ -113,8 +113,97 @@ describe('fromWorkerPool', () => {
     });
   });
 
-  describe('with array input', () => {});
-  describe('with iterator input', () => {});
+  describe('with array input', () => {
+    it('should be able to use array as input', () => {
+      const workerCount = 7;
+
+      const input = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      const testWorkerStream$ = fromWorkerPool<number, number>(workerFactorySpy, input, { workerCount });
+      const subscriptionSpy = jasmine.createSpy('subscriptionSpy');
+      const sub = testWorkerStream$
+        .pipe(
+          reduce((out: number[], res: number) => {
+            out.push(res);
+            return out;
+          }, []),
+        )
+        .subscribe(subscriptionSpy);
+
+      for (const i of input) {
+        const stubWorker = stubbedWorkers[i % workerCount];
+
+        stubWorker.onmessage(
+          new MessageEvent('message', {
+            data: new Notification(NotificationKind.NEXT, { payload: i }),
+          }),
+        );
+
+        stubWorker.onmessage(
+          new MessageEvent('message', {
+            data: new Notification(NotificationKind.COMPLETE),
+          }),
+        );
+      }
+
+      expect(subscriptionSpy).toHaveBeenCalledWith([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+      sub.unsubscribe();
+    });
+  });
+
+  describe('with iterator input', () => {
+    it('should be able to use iterator/generator as input', () => {
+      const workerCount = 7;
+
+      function* generator() {
+        yield 0;
+        yield 1;
+        yield 2;
+        yield 3;
+        yield 4;
+        yield 5;
+        yield 6;
+        yield 7;
+        yield 8;
+        yield 9;
+      }
+
+      const input = generator();
+
+      const testWorkerStream$ = fromWorkerPool<number, number>(workerFactorySpy, input, { workerCount });
+      const subscriptionSpy = jasmine.createSpy('subscriptionSpy');
+      const sub = testWorkerStream$
+        .pipe(
+          reduce((out: number[], res: number) => {
+            out.push(res);
+            return out;
+          }, []),
+        )
+        .subscribe(subscriptionSpy);
+
+      for (const i of generator()) {
+        const stubWorker = stubbedWorkers[i % workerCount];
+
+        stubWorker.onmessage(
+          new MessageEvent('message', {
+            data: new Notification(NotificationKind.NEXT, { payload: i }),
+          }),
+        );
+
+        stubWorker.onmessage(
+          new MessageEvent('message', {
+            data: new Notification(NotificationKind.COMPLETE),
+          }),
+        );
+      }
+
+      expect(workerFactorySpy).toHaveBeenCalledTimes(7);
+      expect(subscriptionSpy).toHaveBeenCalledWith([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+      sub.unsubscribe();
+    });
+  });
 
   describe('output strategy', () => {
     it('[default] outputs results as they are available', fakeAsync(() => {
@@ -153,6 +242,7 @@ describe('fromWorkerPool', () => {
 
       tick(10);
 
+      expect(workerFactorySpy).toHaveBeenCalledTimes(7);
       expect(subscriptionSpy).toHaveBeenCalledWith([9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
 
       sub.unsubscribe();

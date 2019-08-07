@@ -52,11 +52,12 @@ export class SecureHashAlgorithmWorker implements DoWorkUnit<File, ShaWorkerMess
       const reader = new FileReader();
 
       reader.onerror = err => observer.error(err);
-      reader.onabort = err => observer.error(err);
       reader.onload = () => observer.next(reader.result as ArrayBuffer);
       reader.onloadend = () => observer.complete();
 
-      return reader.readAsArrayBuffer(blob);
+      reader.readAsArrayBuffer(blob);
+
+      return () => reader.abort();
     });
   }
 }
