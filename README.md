@@ -25,6 +25,10 @@ Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/
   section for usage
 - Automatic destruction of worker on unsubscription of output stream, this allows for smart cancelling of computation
   using `switchMap` operator, or parallelisation of computation with `mergeMap`
+- [Worker Pool strategy](#worker-pool-strategy) - maximise the throughput of units of work by utilising all cores on the host machine
+
+## Demo
+https://cloudnc.github.io/observable-webworker
 
 ## Tutorial
 https://dev.to/zakhenry/observable-webworkers-with-angular-8-4k6
@@ -149,3 +153,95 @@ Both strategies are compatible with each other, so if for example you're computi
 a worker, you would only need to use add the transferable selector callback in the main thread in order to mark the
 `ArrayBuffer` as being transferable in the input. The library will handle the rest, and you can just use `DoWork` in the
 worker thread, as the return type `string` is not `Transferable`.
+
+## Worker Pool Strategy
+
+If you have a large amount of work that needs to be done, you can use the `fromWorkerPool` function to automatically 
+manage a pool of workers to allow true concurrency of work, distributed evenly across all available cores.
+
+The worker pool strategy has the following features
+* Work can be provided as either `Observable`, `Array`, or `Iterable`
+* Concurrency is limited to `navigation.hardwareConcurrency - 1` to keep the main core free.
+  * This is a configurable option if you know you already have other workers running
+* Workers are only created when there is need for them (work is available)
+* Workers are terminated when there is no more work, freeing up threads for other processes
+  * for `Observable`, work is considered remaining while the observable is not completed
+  * for `Array`, work remains while there are items in the array
+  * for `Iterable`, work remains while the iterator is not `result.done` 
+* Workers are kept running while work remains, preventing unnecessary downloading of the worker script
+* Custom observable flattening operator can be passed, allowing for custom behaviour such as correlating the output 
+order with input order
+  * default operator is `mergeAll()`, which means the output from the webworker(s) is output as soon as available
+
+  
+### Example
+
+In this simple example, we have a function that receives an array of files and returns an observable of the SHA-256 hex
+hashes of those files. For simplicity we're passing the primitives back and forth, however in reality you are likely to 
+want to construct your own interface to define the messages being passed to and from the worker.
+
+#### Main Thread
+
+```ts
+// src/readme/worker-pool.main.ts
+
+import { Observable } from 'rxjs';
+import { fromWorkerPool } from 'observable-webworker';
+
+export function computeHashes(files: File[]): Observable<string> {
+  return fromWorkerPool<File, string>(() => new Worker('./transferable.worker', { type: 'module' }), files);
+}
+
+```
+
+#### Worker Thread
+
+```ts
+// src/readme/worker-pool-hash.worker.ts
+
+import { Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import { DoWorkUnit, ObservableWorker } from '../../projects/observable-webworker/src/public-api';
+
+@ObservableWorker()
+export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
+  public workUnit(input: File): Observable<string> {
+    return this.readFileAsArrayBuffer(input).pipe(
+      switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
+      map((digest: ArrayBuffer) => this.arrayBufferToHex(digest)),
+    );
+  }
+
+  private arrayBufferToHex(buffer: ArrayBuffer): string {
+    return Array.from(new Uint8Array(buffer))
+      .map(value => value.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+  private readFileAsArrayBuffer(blob: Blob): Observable<ArrayBuffer> {
+    return new Observable(observer => {
+      if (!(blob instanceof Blob)) {
+        observer.error(new Error('`blob` must be an instance of File or Blob.'));
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onerror = err => observer.error(err);
+      reader.onload = () => observer.next(reader.result as ArrayBuffer);
+      reader.onloadend = () => observer.complete();
+
+      reader.readAsArrayBuffer(blob);
+
+      return () => reader.abort();
+    });
+  }
+}
+
+```
+
+Note here that the worker class `implements DoWorkUnit<File, string>`. This is different to before where we implemented
+`DoWork` which had the slightly more complex signature of inputting an observable and outputting one.
+
+If using the `fromWorkerPool` strategy, you must only implement `DoWorkUnit` as it relies on the completion of the 
+returned observable to indicate that the unit of work is finished processing.

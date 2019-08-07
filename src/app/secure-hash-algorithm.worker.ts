@@ -1,24 +1,33 @@
+import { ObservableWorker } from 'observable-webworker';
 import { Observable, Subject } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
-import { DoWork, ObservableWorker } from 'observable-webworker';
+import { map, switchMap, tap } from 'rxjs/operators';
+import { DoWorkUnit } from '../../projects/observable-webworker/src/lib/observable-worker.types';
+import { ShaWorkerMessage, Thread } from './sha-worker.types';
 
 @ObservableWorker()
-export class SecureHashAlgorithmWorker implements DoWork<Blob, string> {
-  public work(input$: Observable<Blob>): Observable<string> {
-    const output$: Subject<string> = new Subject();
+export class SecureHashAlgorithmWorker implements DoWorkUnit<File, ShaWorkerMessage> {
+  public workUnit(input: File): Observable<ShaWorkerMessage> {
+    const output$: Subject<ShaWorkerMessage> = new Subject();
 
-    input$
-      .pipe(
-        take(1),
-        tap(() => output$.next('received file')),
-        switchMap(message => this.readFileAsArrayBuffer(message)),
-        tap(() => output$.next('read file')),
-        switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
-        tap(() => output$.next('hashed file')),
-        map((digest: ArrayBuffer): string => 'hash result: ' + this.arrayBufferToHex(digest)),
-        tap(() => output$.next('sending hash back to main thread')),
-      )
-      .subscribe(output$);
+    const log = message => ({
+      file: input.name,
+      timestamp: new Date(),
+      message,
+      thread: Thread.WORKER,
+    });
+
+    output$.next(log(`received file`));
+    return this.readFileAsArrayBuffer(input).pipe(
+      tap(() => output$.next(log(`read file`))),
+      switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
+      tap(() => output$.next(log(`hashed file`))),
+      map((digest: ArrayBuffer): ShaWorkerMessage => log(`hash result: ${this.arrayBufferToHex(digest)}`)),
+      tap(() => output$.next(log(`sending hash back to main thread`))),
+      tap(out => {
+        output$.next(out);
+        output$.complete();
+      }),
+    );
 
     return output$;
   }
@@ -43,11 +52,12 @@ export class SecureHashAlgorithmWorker implements DoWork<Blob, string> {
       const reader = new FileReader();
 
       reader.onerror = err => observer.error(err);
-      reader.onabort = err => observer.error(err);
       reader.onload = () => observer.next(reader.result as ArrayBuffer);
       reader.onloadend = () => observer.complete();
 
-      return reader.readAsArrayBuffer(blob);
+      reader.readAsArrayBuffer(blob);
+
+      return () => reader.abort();
     });
   }
 }

@@ -1,0 +1,11 @@
+<h2>Multiple Worker Pool</h2>
+
+Select multiple files to compute SHA-256 sum of, in pool of webworkers:
+<input type="file" multiple (change)="calculateSha256Multiple($event)" />
+
+<h3 [attr.data]="workResult$ | async">Events:</h3>
+<ol>
+  <li *ngFor="let event of eventListPool$ | async">
+    <app-log-line *ngIf="filenames$ | async as filenames" [message]="event" [files]="filenames"></app-log-line>
+  </li>
+</ol>

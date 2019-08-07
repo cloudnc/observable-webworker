@@ -1,0 +1,6 @@
+<span class="thread">[{{ message.thread }}]</span>
+<span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss.SSS' }}</span>
+<span class="timedelta" *ngIf="message.millisSinceLast !== null; else nodelta">+{{ message.millisSinceLast }}ms</span>
+<ng-template #nodelta><span class="timedelta"></span></ng-template>
+<span class="file" [style.background-color]="color">{{ message.file }}</span>
+<span class="message">{{ message.message }}</span>
