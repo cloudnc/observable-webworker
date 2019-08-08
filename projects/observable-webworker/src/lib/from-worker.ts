@@ -26,14 +26,20 @@ export function fromWorker<Input, Output>(
           map((payload: Input) => {
             const message: GenericWorkerMessage<Input> = { payload };
 
-            if (selectTransferables) {
-              message.transferables = selectTransferables(payload);
-            }
 
             return message;
           }),
           materialize(),
-          tap(input => worker.postMessage(input)),
+          tap(input => {
+
+            if (selectTransferables && input.hasValue) {
+              const transferables = selectTransferables(input.value.payload);
+              worker.postMessage(input, transferables);
+            } else {
+              worker.postMessage(input);
+            }
+
+          }),
         )
         .subscribe();
     } catch (error) {

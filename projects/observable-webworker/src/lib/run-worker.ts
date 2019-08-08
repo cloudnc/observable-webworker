@@ -1,4 +1,4 @@
-import { fromEvent, Notification, Observable } from 'rxjs';
+import { fromEvent, Notification, Observable, Subscription } from 'rxjs';
 import { NotificationKind } from 'rxjs/internal/Notification';
 import { concatMap, dematerialize, filter, finalize, map, materialize, tap } from 'rxjs/operators';
 import {
@@ -48,8 +48,12 @@ export function processWork<I, O>(
   );
 }
 
-export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I, O>) {
-  const input$ = fromEvent(self, 'message').pipe(
+/** @internal */
+export function getWorkerResult<I, O>(
+  worker: DoWork<I, O> | DoWorkUnit<I, O>,
+  incomingMessages$: Observable<WorkerMessageNotification<I>>,
+): Observable<Notification<GenericWorkerMessage<O>>> {
+  const input$ = incomingMessages$.pipe(
     map((e: WorkerMessageNotification<I>): Notification<GenericWorkerMessage<I>> => e.data),
     map((n: Notification<GenericWorkerMessage<I>>) => new Notification(n.kind, n.value, n.error)),
     // ignore complete, the calling thread will manage termination of the stream
@@ -58,13 +62,17 @@ export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I
     map(i => i.payload),
   );
 
-  const worker = new workerConstructor();
-
-  const outputStream$ = workerIsUnitType(worker)
+  return workerIsUnitType(worker)
     ? input$.pipe(concatMap(input => processWork(worker.workUnit(input), worker)))
     : processWork(worker.work(input$), worker);
+}
 
-  outputStream$.subscribe((notification: Notification<GenericWorkerMessage<O>>) => {
+export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I, O>): Subscription {
+  const worker = new workerConstructor();
+
+  const incomingMessages$ = fromEvent<WorkerMessageNotification<I>>(self, 'message');
+
+  return getWorkerResult(worker, incomingMessages$).subscribe((notification: Notification<GenericWorkerMessage<O>>) => {
     const transferables = notification.hasValue ? notification.value.transferables : undefined;
     // type to workaround typescript trying to compile as non-webworker context
     ((postMessage as unknown) as WorkerPostMessageNotification<O>)(notification, transferables);

@@ -25,3 +25,8 @@ export interface DoWork<I, O> {
 export interface DoTransferableWork<I, O> extends DoWork<I, O> {
   selectTransferables(output: O): Transferable[];
 }
+
+// same as DoWorkUnit, but selectTransferables is required
+export interface DoTransferableWorkUnit<I, O> extends DoWorkUnit<I, O> {
+  selectTransferables(output: O): Transferable[];
+}

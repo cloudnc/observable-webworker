@@ -1,4 +1,4 @@
-import { Observable, Subject } from 'rxjs';
+import { Observable, Observer, of, Subject } from 'rxjs';
 import { Notification, NotificationKind } from 'rxjs/internal/Notification';
 import { fromWorker } from './from-worker';
 
@@ -124,6 +124,24 @@ describe('fromWorker', () => {
     expect(sub.closed).toBe(true);
   });
 
+  it('should propagate browser errors', () => {
+    const subscriptionErrorSpy = jasmine.createSpy('subscriptionErrorSpy');
+
+    const testErrorStream = fromWorker<number, number>(() => {
+      throw new Error('Oops!')
+    }, input$);
+
+    const sub = testErrorStream.subscribe({ error: subscriptionErrorSpy });
+
+    expect(subscriptionErrorSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        message: 'Oops!',
+      }),
+    );
+
+    expect(sub.closed).toBe(true);
+  });
+
   it('should construct multiple workers for multiple subscribers', () => {
     const sub1 = stubbedWorkerStream.subscribe();
     const sub2 = stubbedWorkerStream.subscribe();
@@ -139,5 +157,39 @@ describe('fromWorker', () => {
     sub2.unsubscribe();
     expect(sub2.closed).toBe(true);
     expect(stubWorker.terminate).toHaveBeenCalledTimes(2);
+  });
+
+  it('identifies transferables and passes them through to the worker', () => {
+
+    const subscriptionSpy = jasmine.createSpyObj<Observer<number>>('subscriptionSpy', ['next', 'complete', 'error']);
+
+    const testValue = new Int8Array(1);
+    testValue[0] = 99;
+
+    const testTransferableStream = fromWorker<Int8Array, number>(workerFactorySpy, of(testValue), input => [input.buffer]);
+
+    const sub = testTransferableStream.subscribe(subscriptionSpy);
+
+    expect(stubWorker.postMessage).toHaveBeenCalledWith(
+      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: {payload: testValue }}),
+      [testValue.buffer]
+    );
+
+    stubWorker.onmessage(
+      new MessageEvent('message', {
+        data: new Notification(NotificationKind.NEXT, { payload: 1 }),
+      }),
+    );
+
+    stubWorker.onmessage(
+      new MessageEvent('message', {
+        data: new Notification(NotificationKind.COMPLETE),
+      }),
+    );
+
+    expect(subscriptionSpy.next).toHaveBeenCalledWith(1);
+
+    expect(sub.closed).toBe(true);
+
   });
 });
