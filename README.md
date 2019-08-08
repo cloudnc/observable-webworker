@@ -4,6 +4,7 @@ Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/
 
 [![npm version](https://badge.fury.io/js/observable-webworker.svg)](https://www.npmjs.com/package/observable-webworker)
 [![Build Status](https://travis-ci.org/cloudnc/observable-webworker.svg?branch=master)](https://travis-ci.org/cloudnc/observable-webworker)
+[![codecov](https://codecov.io/gh/cloudnc/observable-webworker/branch/master/graph/badge.svg)](https://codecov.io/gh/cloudnc/observable-webworker)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](https://commitizen.github.io/cz-cli/)
 
 # Features

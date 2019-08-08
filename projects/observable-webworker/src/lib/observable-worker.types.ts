@@ -8,7 +8,7 @@ export interface GenericWorkerMessage<P = any> {
 
 /** @internal */
 export interface WorkerMessageNotification<T> extends MessageEvent {
-  data: Notification<GenericWorkerMessage<T>>;
+  data: Notification<T>;
 }
 
 export interface DoWorkUnit<I, O> {
@@ -23,5 +23,10 @@ export interface DoWork<I, O> {
 
 // same as DoWork, but selectTransferables is required
 export interface DoTransferableWork<I, O> extends DoWork<I, O> {
+  selectTransferables(output: O): Transferable[];
+}
+
+// same as DoWorkUnit, but selectTransferables is required
+export interface DoTransferableWorkUnit<I, O> extends DoWorkUnit<I, O> {
   selectTransferables(output: O): Transferable[];
 }
