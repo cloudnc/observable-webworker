@@ -5,7 +5,6 @@ import { ObservableWorker } from './observable-worker.decorator';
 import { DoWork, WorkerMessageNotification } from './observable-worker.types';
 
 describe('@ObservableWorker', () => {
-
   it('should automatically run the worker', () => {
     const postMessageSpy = spyOn(window, 'postMessage');
     postMessageSpy.calls.reset();
@@ -18,7 +17,7 @@ describe('@ObservableWorker', () => {
     }
 
     const nextEvent: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, {payload: 0}),
+      data: new Notification(NotificationKind.NEXT, 0),
     });
 
     self.dispatchEvent(nextEvent);
@@ -26,18 +25,14 @@ describe('@ObservableWorker', () => {
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.NEXT,
-        value: { payload: 0 },
+        value: 0,
       }),
-      undefined
     );
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.COMPLETE,
       }),
-      undefined
     );
-
   });
 });
-

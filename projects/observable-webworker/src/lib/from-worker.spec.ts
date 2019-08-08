@@ -35,13 +35,13 @@ describe('fromWorker', () => {
     input$.next(1);
 
     expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: { payload: 1 } }),
+      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 1 }),
     );
 
     input$.next(2);
 
     expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: { payload: 2 } }),
+      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 2 }),
     );
 
     input$.complete();
@@ -75,7 +75,7 @@ describe('fromWorker', () => {
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.NEXT, { payload: 1 }),
+        data: new Notification(NotificationKind.NEXT, 1),
       }),
     );
 
@@ -128,7 +128,7 @@ describe('fromWorker', () => {
     const subscriptionErrorSpy = jasmine.createSpy('subscriptionErrorSpy');
 
     const testErrorStream = fromWorker<number, number>(() => {
-      throw new Error('Oops!')
+      throw new Error('Oops!');
     }, input$);
 
     const sub = testErrorStream.subscribe({ error: subscriptionErrorSpy });
@@ -160,24 +160,25 @@ describe('fromWorker', () => {
   });
 
   it('identifies transferables and passes them through to the worker', () => {
-
     const subscriptionSpy = jasmine.createSpyObj<Observer<number>>('subscriptionSpy', ['next', 'complete', 'error']);
 
     const testValue = new Int8Array(1);
     testValue[0] = 99;
 
-    const testTransferableStream = fromWorker<Int8Array, number>(workerFactorySpy, of(testValue), input => [input.buffer]);
+    const testTransferableStream = fromWorker<Int8Array, number>(workerFactorySpy, of(testValue), input => [
+      input.buffer,
+    ]);
 
     const sub = testTransferableStream.subscribe(subscriptionSpy);
 
     expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: {payload: testValue }}),
-      [testValue.buffer]
+      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: testValue }),
+      [testValue.buffer],
     );
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.NEXT, { payload: 1 }),
+        data: new Notification(NotificationKind.NEXT, 1),
       }),
     );
 
@@ -190,6 +191,5 @@ describe('fromWorker', () => {
     expect(subscriptionSpy.next).toHaveBeenCalledWith(1);
 
     expect(sub.closed).toBe(true);
-
   });
 });

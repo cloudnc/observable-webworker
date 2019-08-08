@@ -8,7 +8,7 @@ export interface GenericWorkerMessage<P = any> {
 
 /** @internal */
 export interface WorkerMessageNotification<T> extends MessageEvent {
-  data: Notification<GenericWorkerMessage<T>>;
+  data: Notification<T>;
 }
 
 export interface DoWorkUnit<I, O> {

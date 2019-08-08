@@ -56,7 +56,7 @@ describe('fromWorkerPool', () => {
       expect(workerFactorySpy).toHaveBeenCalledTimes(navigator.hardwareConcurrency - 1);
 
       expect(stubbedWorkers[0].postMessage).toHaveBeenCalledWith(
-        jasmine.objectContaining({ kind: NotificationKind.NEXT, value: { payload: 0 } }),
+        jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 0 }),
       );
 
       sub.unsubscribe();
@@ -94,7 +94,7 @@ describe('fromWorkerPool', () => {
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, { payload: i }),
+            data: new Notification(NotificationKind.NEXT, i),
           }),
         );
 
@@ -135,7 +135,7 @@ describe('fromWorkerPool', () => {
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, { payload: i }),
+            data: new Notification(NotificationKind.NEXT, i),
           }),
         );
 
@@ -187,7 +187,7 @@ describe('fromWorkerPool', () => {
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, { payload: i }),
+            data: new Notification(NotificationKind.NEXT, i),
           }),
         );
 
@@ -228,7 +228,7 @@ describe('fromWorkerPool', () => {
 
           stubWorker.onmessage(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.NEXT, { payload: input[i] }),
+              data: new Notification(NotificationKind.NEXT, input[i]),
             }),
           );
 
@@ -295,7 +295,7 @@ describe('fromWorkerPool', () => {
 
           stubWorker.onmessage(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.NEXT, { payload: input[i] }),
+              data: new Notification(NotificationKind.NEXT, input[i]),
             }),
           );
 

@@ -1,6 +1,6 @@
-import { Observable, Observer, Subscription, Notification } from 'rxjs';
+import { Notification, Observable, Observer, Subscription } from 'rxjs';
 import { dematerialize, map, materialize, tap } from 'rxjs/operators';
-import { GenericWorkerMessage, WorkerMessageNotification } from './observable-worker.types';
+import { WorkerMessageNotification } from './observable-worker.types';
 
 export interface WorkerOptions {
   terminateOnComplete: boolean;
@@ -12,7 +12,7 @@ export function fromWorker<Input, Output>(
   selectTransferables?: (input: Input) => Transferable[],
   options: WorkerOptions = { terminateOnComplete: true },
 ): Observable<Output> {
-  return new Observable((responseObserver: Observer<Notification<GenericWorkerMessage<Output>>>) => {
+  return new Observable((responseObserver: Observer<Notification<Output>>) => {
     let worker: Worker;
     let subscription: Subscription;
 
@@ -23,22 +23,14 @@ export function fromWorker<Input, Output>(
 
       subscription = input$
         .pipe(
-          map((payload: Input) => {
-            const message: GenericWorkerMessage<Input> = { payload };
-
-
-            return message;
-          }),
           materialize(),
           tap(input => {
-
             if (selectTransferables && input.hasValue) {
-              const transferables = selectTransferables(input.value.payload);
+              const transferables = selectTransferables(input.value);
               worker.postMessage(input, transferables);
             } else {
               worker.postMessage(input);
             }
-
           }),
         )
         .subscribe();
@@ -57,6 +49,5 @@ export function fromWorker<Input, Output>(
   }).pipe(
     map(({ kind, value, error }) => new Notification(kind, value, error)),
     dematerialize(),
-    map(message => message.payload),
   );
 }

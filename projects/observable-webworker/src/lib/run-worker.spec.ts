@@ -7,7 +7,7 @@ import {
   DoWorkUnit,
   WorkerMessageNotification,
 } from './observable-worker.types';
-import { processWork, runWorker, workerIsTransferableType, workerIsUnitType } from './run-worker';
+import { getWorkerResult, runWorker, workerIsTransferableType, workerIsUnitType } from './run-worker';
 
 describe('workerIsTransferableType', () => {
   it('should identify a worker as being able to map transferables', () => {
@@ -51,88 +51,6 @@ describe('workerIsUnitType', () => {
   });
 });
 
-describe('processWork', () => {
-  it('takes a stream of work and converts it to a stream of worker message notifications', () => {
-    class TestWorker implements DoWork<number, number> {
-      public work(input$: Observable<number>): Observable<number> {
-        return undefined;
-      }
-    }
-
-    const input$ = from([1, 2, 3]);
-
-    const output$ = processWork(input$, new TestWorker());
-
-    const outputSpy = jasmine.createSpyObj<Observer<number>>(['next', 'complete', 'error']);
-
-    const sub = output$.subscribe(outputSpy);
-
-    expect(outputSpy.complete).toHaveBeenCalled();
-    expect(outputSpy.error).not.toHaveBeenCalled();
-
-    expect(outputSpy.next).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: { payload: 1 } }),
-    );
-
-    expect(outputSpy.next).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: { payload: 2 } }),
-    );
-
-    expect(outputSpy.next).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: { payload: 3 } }),
-    );
-
-    sub.unsubscribe();
-  });
-
-  it('takes stream of work and identifies the transferables within', () => {
-    class TestWorkerTransferable implements DoTransferableWorkUnit<number, Int8Array> {
-      public selectTransferables(output: Int8Array): Transferable[] {
-        return [output.buffer];
-      }
-
-      public workUnit(input: number): Observable<Int8Array> {
-        return of(new Int8Array(input));
-      }
-    }
-
-    const testOutput = new Int8Array(1);
-    testOutput[0] = 123;
-
-    const input$ = of(testOutput);
-
-    const worker = new TestWorkerTransferable();
-
-    const transferableSpy = spyOn(worker, 'selectTransferables').and.callThrough();
-
-    const output$ = processWork(input$, worker);
-
-    const outputSpy = jasmine.createSpyObj<Observer<number>>(['next', 'complete', 'error']);
-
-    const sub = output$.subscribe(outputSpy);
-
-    expect(transferableSpy).toHaveBeenCalledWith(testOutput);
-
-    expect(outputSpy.complete).toHaveBeenCalled();
-    expect(outputSpy.error).not.toHaveBeenCalled();
-
-    expect(outputSpy.next).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        kind: NotificationKind.NEXT,
-        value: { payload: testOutput, transferables: [testOutput.buffer] },
-      }),
-    );
-
-    sub.unsubscribe();
-  });
-});
-
-describe('getWorkerResult', () => {
-
-
-
-});
-
 describe('runWorker', () => {
   it('should read messages from self.message event emitter and process work and send results back to postmessage', () => {
     const postMessageSpy = spyOn(window, 'postMessage');
@@ -146,7 +64,7 @@ describe('runWorker', () => {
     const sub = runWorker(TestWorkerUnit);
 
     const event: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, {payload: 11}),
+      data: new Notification(NotificationKind.NEXT, 11),
     });
 
     self.dispatchEvent(event);
@@ -154,30 +72,26 @@ describe('runWorker', () => {
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.NEXT,
-        value: { payload: 22 },
+        value: 22,
       }),
-      undefined
     );
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.COMPLETE,
       }),
-      undefined
     );
 
     sub.unsubscribe();
   });
-
 
   it('should pass outbound transferables to the postMessage call', () => {
     const postMessageSpy = spyOn(window, 'postMessage');
 
     class TestWorkerUnitTransferable implements DoTransferableWorkUnit<Int8Array, Int8Array> {
       public workUnit(input: Int8Array): Observable<Int8Array> {
-
-        for (let i = 0; i<input.length; i++) {
-          input[i]*=3;
+        for (let i = 0; i < input.length; i++) {
+          input[i] *= 3;
         }
 
         return of(input);
@@ -201,7 +115,7 @@ describe('runWorker', () => {
     expected[2] = 9;
 
     const event: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, {payload}),
+      data: new Notification(NotificationKind.NEXT, payload),
     });
 
     self.dispatchEvent(event);
@@ -209,16 +123,15 @@ describe('runWorker', () => {
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.NEXT,
-        value: { payload: expected, transferables: [expected.buffer] },
+        value: payload,
       }),
-      [expected.buffer]
+      [expected.buffer],
     );
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.COMPLETE,
       }),
-      undefined
     );
 
     sub.unsubscribe();
@@ -230,16 +143,14 @@ describe('runWorker', () => {
 
     class TestWorker implements DoWork<number, number> {
       public work(input$: Observable<number>): Observable<number> {
-
         return new BehaviorSubject(1);
       }
-
     }
 
     const sub = runWorker(TestWorker);
 
     const event: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, {payload: 0}),
+      data: new Notification(NotificationKind.NEXT, 0),
     });
 
     self.dispatchEvent(event);
@@ -247,16 +158,14 @@ describe('runWorker', () => {
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.NEXT,
-        value: { payload: 1 },
+        value: 1,
       }),
-      undefined
     );
 
     expect(postMessageSpy).not.toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: NotificationKind.COMPLETE,
       }),
-      undefined
     );
 
     sub.unsubscribe();

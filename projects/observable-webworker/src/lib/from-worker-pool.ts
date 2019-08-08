@@ -5,9 +5,8 @@ import { fromWorker } from './from-worker';
 
 interface LazyWorker {
   factory: () => Worker;
-  terminate: (force?: boolean) => void;
+  terminate: () => void;
   processing: boolean;
-  terminated: boolean;
   started: boolean;
   index: number;
 }
@@ -47,16 +46,12 @@ export function fromWorkerPool<I, O>(
           }
           return this._cachedWorker;
         },
-        terminate(force = false) {
-          if (force || (this.started && !this.processing)) {
-            if (!this.terminated) {
-              this._cachedWorker.terminate();
-            }
-            this.terminated = true;
+        terminate() {
+          if (this.started && !this.processing) {
+            this._cachedWorker.terminate();
           }
         },
         processing: false,
-        terminated: false,
         started: false,
         index,
       };

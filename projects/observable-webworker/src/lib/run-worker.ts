@@ -12,10 +12,7 @@ import {
 export type ObservableWorkerConstructor<I = any, O = any> = new (...args) => DoWork<I, O> | DoWorkUnit<I, O>;
 
 /** @internal */
-export type WorkerPostMessageNotification<T> = (
-  message: Notification<GenericWorkerMessage<T>>,
-  tranferables?: Transferable[],
-) => void;
+export type WorkerPostMessageNotification<T> = (message: Notification<T>, tranferables?: Transferable[]) => void;
 
 /** @internal */
 export function workerIsTransferableType<I, O>(
@@ -30,41 +27,21 @@ export function workerIsUnitType<I, O>(worker: DoWork<I, O> | DoWorkUnit<I, O>):
 }
 
 /** @internal */
-export function processWork<I, O>(
-  obs$: Observable<O>,
-  worker: DoWork<I, O> | DoWorkUnit<I, O>,
-): Observable<Notification<GenericWorkerMessage<O>>> {
-  return obs$.pipe(
-    map(payload => {
-      const message: GenericWorkerMessage<O> = { payload };
-
-      if (workerIsTransferableType(worker)) {
-        message.transferables = worker.selectTransferables(payload);
-      }
-
-      return message;
-    }),
-    materialize(),
-  );
-}
-
-/** @internal */
 export function getWorkerResult<I, O>(
   worker: DoWork<I, O> | DoWorkUnit<I, O>,
   incomingMessages$: Observable<WorkerMessageNotification<I>>,
-): Observable<Notification<GenericWorkerMessage<O>>> {
+): Observable<Notification<O>> {
   const input$ = incomingMessages$.pipe(
-    map((e: WorkerMessageNotification<I>): Notification<GenericWorkerMessage<I>> => e.data),
-    map((n: Notification<GenericWorkerMessage<I>>) => new Notification(n.kind, n.value, n.error)),
+    map((e: WorkerMessageNotification<I>): Notification<I> => e.data),
+    map((n: Notification<I>) => new Notification(n.kind, n.value, n.error)),
     // ignore complete, the calling thread will manage termination of the stream
     filter(n => n.kind !== NotificationKind.COMPLETE),
     dematerialize(),
-    map(i => i.payload),
   );
 
   return workerIsUnitType(worker)
-    ? input$.pipe(concatMap(input => processWork(worker.workUnit(input), worker)))
-    : processWork(worker.work(input$), worker);
+    ? input$.pipe(concatMap(input => worker.workUnit(input).pipe(materialize())))
+    : worker.work(input$).pipe(materialize());
 }
 
 export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I, O>): Subscription {
@@ -72,9 +49,16 @@ export function runWorker<I, O>(workerConstructor: ObservableWorkerConstructor<I
 
   const incomingMessages$ = fromEvent<WorkerMessageNotification<I>>(self, 'message');
 
-  return getWorkerResult(worker, incomingMessages$).subscribe((notification: Notification<GenericWorkerMessage<O>>) => {
-    const transferables = notification.hasValue ? notification.value.transferables : undefined;
+  const transferableWorker = workerIsTransferableType(worker);
+
+  return getWorkerResult(worker, incomingMessages$).subscribe((notification: Notification<O>) => {
     // type to workaround typescript trying to compile as non-webworker context
-    ((postMessage as unknown) as WorkerPostMessageNotification<O>)(notification, transferables);
+    const workerPostMessage = (postMessage as unknown) as WorkerPostMessageNotification<O>;
+
+    if (transferableWorker && notification.hasValue) {
+      workerPostMessage(notification, worker.selectTransferables(notification.value));
+    } else {
+      workerPostMessage(notification);
+    }
   });
 }
