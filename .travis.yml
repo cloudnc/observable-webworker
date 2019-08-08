@@ -32,6 +32,9 @@ script:
   - rm dist/observable-webworker/README.md && cp README.md dist/observable-webworker
   - cp LICENSE dist/observable-webworker
 
+after_success:
+  - codecov
+
 deploy:
   - provider: script
     skip_cleanup: true
