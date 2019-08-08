@@ -159,37 +159,37 @@ describe('fromWorker', () => {
     expect(stubWorker.terminate).toHaveBeenCalledTimes(2);
   });
 
-  it('identifies transferables and passes them through to the worker', () => {
-    const subscriptionSpy = jasmine.createSpyObj<Observer<number>>('subscriptionSpy', ['next', 'complete', 'error']);
-
-    const testValue = new Int8Array(1);
-    testValue[0] = 99;
-
-    const testTransferableStream = fromWorker<Int8Array, number>(workerFactorySpy, of(testValue), input => [
-      input.buffer,
-    ]);
-
-    const sub = testTransferableStream.subscribe(subscriptionSpy);
-
-    expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: testValue }),
-      [testValue.buffer],
-    );
-
-    stubWorker.onmessage(
-      new MessageEvent('message', {
-        data: new Notification(NotificationKind.NEXT, 1),
-      }),
-    );
-
-    stubWorker.onmessage(
-      new MessageEvent('message', {
-        data: new Notification(NotificationKind.COMPLETE),
-      }),
-    );
-
-    expect(subscriptionSpy.next).toHaveBeenCalledWith(1);
-
-    expect(sub.closed).toBe(true);
-  });
+  // it('identifies transferables and passes them through to the worker', () => {
+  //   const subscriptionSpy = jasmine.createSpyObj<Observer<number>>('subscriptionSpy', ['next', 'complete', 'error']);
+  //
+  //   const testValue = new Int8Array(1);
+  //   testValue[0] = 99;
+  //
+  //   const testTransferableStream = fromWorker<Int8Array, number>(workerFactorySpy, of(testValue), input => [
+  //     input.buffer,
+  //   ]);
+  //
+  //   const sub = testTransferableStream.subscribe(subscriptionSpy);
+  //
+  //   expect(stubWorker.postMessage).toHaveBeenCalledWith(
+  //     jasmine.objectContaining({ kind: NotificationKind.NEXT, value: testValue }),
+  //     [testValue.buffer],
+  //   );
+  //
+  //   stubWorker.onmessage(
+  //     new MessageEvent('message', {
+  //       data: new Notification(NotificationKind.NEXT, 1),
+  //     }),
+  //   );
+  //
+  //   stubWorker.onmessage(
+  //     new MessageEvent('message', {
+  //       data: new Notification(NotificationKind.COMPLETE),
+  //     }),
+  //   );
+  //
+  //   expect(subscriptionSpy.next).toHaveBeenCalledWith(1);
+  //
+  //   expect(sub.closed).toBe(true);
+  // });
 });
