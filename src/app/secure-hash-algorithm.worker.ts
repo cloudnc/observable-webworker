@@ -18,17 +18,19 @@ export class SecureHashAlgorithmWorker implements DoWorkUnit<File, ShaWorkerMess
     });
 
     output$.next(log(FileHashEvent.FILE_RECEIVED, `received file`));
-    this.readFileAsArrayBuffer(input).pipe(
-      tap(() => output$.next(log(FileHashEvent.FILE_READ, `read file`))),
-      switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
-      tap(() => output$.next(log(FileHashEvent.HASH_COMPUTED, `hashed file`))),
-      map((digest: ArrayBuffer): ShaWorkerMessage => log(null,`hash result: ${this.arrayBufferToHex(digest)}`)),
-      tap(out => {
-        output$.next(out);
-        output$.complete();
-      }),
-      take(1),
-    ).subscribe();
+    this.readFileAsArrayBuffer(input)
+      .pipe(
+        tap(() => output$.next(log(FileHashEvent.FILE_READ, `read file`))),
+        switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
+        tap(() => output$.next(log(FileHashEvent.HASH_COMPUTED, `hashed file`))),
+        map((digest: ArrayBuffer): ShaWorkerMessage => log(null, `hash result: ${this.arrayBufferToHex(digest)}`)),
+        tap(out => {
+          output$.next(out);
+          output$.complete();
+        }),
+        take(1),
+      )
+      .subscribe();
 
     return output$;
   }

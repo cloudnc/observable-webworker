@@ -1,10 +1,19 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { animationFrameScheduler, combineLatest, interval, Observable, ReplaySubject, Subject } from 'rxjs';
+import {
+  animationFrameScheduler,
+  asyncScheduler,
+  combineLatest,
+  interval,
+  Observable,
+  ReplaySubject,
+  Subject,
+} from 'rxjs';
 import {
   filter,
   groupBy,
   map,
   mergeMap,
+  observeOn,
   pairwise,
   scan,
   shareReplay,
@@ -18,6 +27,7 @@ import {
 import { fromWorkerPool } from '../../../projects/observable-webworker/src/lib/from-worker-pool';
 import { GoogleChartsService } from '../google-charts.service';
 import { FileHashEvent, ShaWorkerMessage, Thread } from '../sha-worker.types';
+import TimelineOptions = google.visualization.TimelineOptions;
 
 @Component({
   selector: 'app-multiple-worker-pool',
@@ -28,7 +38,10 @@ export class MultipleWorkerPoolComponent {
   @ViewChild('timeline', { static: false, read: ElementRef }) private timelineComponent: ElementRef;
 
   public multiFilesToHash: Subject<File[]> = new ReplaySubject(1);
-  public workResult$ = this.multiFilesToHash.pipe(switchMap(files => this.hashMultipleFiles(files)));
+  public workResult$ = this.multiFilesToHash.pipe(
+    observeOn(asyncScheduler),
+    switchMap(files => this.hashMultipleFiles(files)),
+  );
 
   private filenames: string[];
   public filenames$ = this.multiFilesToHash.pipe(
@@ -39,20 +52,39 @@ export class MultipleWorkerPoolComponent {
 
   public eventsPool$: Subject<ShaWorkerMessage> = new Subject();
 
-  public completedFiles$: Observable<string[]> = this.eventsPool$.pipe(
-    groupBy(m => m.file),
-    mergeMap(fileMessage$ =>
-      fileMessage$.pipe(
-        filter(e => e.fileEventType === FileHashEvent.HASH_RECEIVED),
-        take(1),
+  public completedFiles$: Observable<string[]> = this.filenames$.pipe(
+    switchMap(() =>
+      this.eventsPool$.pipe(
+        groupBy(m => m.file),
+        mergeMap(fileMessage$ =>
+          fileMessage$.pipe(
+            filter(e => e.fileEventType === FileHashEvent.HASH_RECEIVED),
+            take(1),
+          ),
+        ),
+        map(message => message.file),
+        scan<string>((files, file) => [...files, file], []),
+        startWith([]),
       ),
     ),
-    map(message => message.file),
-    scan<string>((files, file) => [...files, file], []),
   );
 
   public complete$: Observable<boolean> = combineLatest(this.filenames$, this.completedFiles$).pipe(
     map(([files, completedFiles]) => files.length === completedFiles.length),
+  );
+
+  public status$: Observable<string> = this.complete$.pipe(
+    startWith(null),
+    map(isComplete => {
+      switch (isComplete) {
+        case null:
+          return 'Waiting for file selection';
+        case true:
+          return 'Completed';
+        case false:
+          return 'Processing files';
+      }
+    }),
   );
 
   public eventsTimedPool$: Observable<ShaWorkerMessage> = this.eventsPool$.pipe(
@@ -78,8 +110,8 @@ export class MultipleWorkerPoolComponent {
     }, []),
   );
 
-  public chartObserver$ = this.googleChartService.getVisualisation('timeline').pipe(
-    switchMap(visualization => {
+  public chartObserver$ = combineLatest(this.filenames$, this.googleChartService.getVisualisation('timeline')).pipe(
+    switchMap(([filenames, visualization]) => {
       const container = this.timelineComponent.nativeElement;
       const chart = new visualization.Timeline(container);
       const dataTable = new visualization.DataTable();
@@ -90,6 +122,10 @@ export class MultipleWorkerPoolComponent {
       dataTable.addColumn({ type: 'date', id: 'End' });
 
       const lastRow = new Map();
+
+      const chartOptions: TimelineOptions = {
+        height: 0,
+      };
 
       const eventUpdates$ = this.eventsPool$.pipe(
         tap(event => {
@@ -131,7 +167,9 @@ export class MultipleWorkerPoolComponent {
           const row = dataTable.addRow([event.file, durationName, event.timestamp, event.timestamp]);
           lastRow.set(event.file, row);
 
-          chart.draw(dataTable);
+          chartOptions.height = filenames.length * 41 + 50;
+
+          chart.draw(dataTable, chartOptions);
         }),
       );
 
@@ -139,12 +177,12 @@ export class MultipleWorkerPoolComponent {
         tap(() => {
           const rowsToUpdate = Array.from(lastRow.values());
 
-          for (let row of rowsToUpdate) {
+          for (const row of rowsToUpdate) {
             dataTable.setCell(row, 3, new Date());
           }
 
           if (rowsToUpdate.length) {
-            chart.draw(dataTable);
+            chart.draw(dataTable, chartOptions);
           }
         }),
       );
@@ -195,10 +233,10 @@ export class MultipleWorkerPoolComponent {
 
   public calculateSha256Multiple($event): void {
     const files: File[] = Array.from($event.target.files);
+    this.multiFilesToHash.next(files);
     for (const file of files) {
       this.eventsPool$.next(this.logMessage(FileHashEvent.SELECTED, 'file selected', file.name));
     }
-    this.multiFilesToHash.next(files);
   }
 
   private logMessage(eventType: FileHashEvent | null, message: string, file?: string): ShaWorkerMessage {

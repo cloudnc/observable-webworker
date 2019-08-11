@@ -1,7 +1,7 @@
 /// <reference types="google.visualization" />
 import { Injectable, Type } from '@angular/core';
 import { Observable } from 'rxjs';
-import {GoogleCharts} from 'google-charts';
+import { GoogleCharts } from 'google-charts';
 
 export interface GoogleVis {
   Timeline: Type<google.visualization.Timeline>;
@@ -10,27 +10,21 @@ export interface GoogleVis {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GoogleChartsService {
-
-  constructor() { }
+  constructor() {}
 
   public getVisualisation(...withPackages: string[]): Observable<GoogleVis> {
-
     return new Observable(observer => {
-
-      //Load the charts library with a callback
+      // Load the charts library with a callback
       GoogleCharts.load(() => {
-        GoogleCharts.api.charts.load('current', {'packages':withPackages})
+        GoogleCharts.api.charts.load('current', { packages: withPackages });
         GoogleCharts.api.charts.setOnLoadCallback(() => {
           observer.next(GoogleCharts.api.visualization);
           observer.complete();
         });
       });
-
-    })
-
+    });
   }
-
 }
