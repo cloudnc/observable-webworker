@@ -2,8 +2,8 @@
 
 rm -rf test-files/*
 
-COUNT=${1:-20}
-MAXSIZE_MB=${2:-100}
+COUNT=${1:-10}
+MAXSIZE_MB=${2:-400}
 
 for i in $(seq 1 $COUNT)
 do

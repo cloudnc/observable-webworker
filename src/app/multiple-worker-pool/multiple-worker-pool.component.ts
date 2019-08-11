@@ -123,8 +123,12 @@ export class MultipleWorkerPoolComponent {
 
       const lastRow = new Map();
 
-      const chartOptions: TimelineOptions = {
+      const chartOptions: TimelineOptions & { hAxis: any } = {
         height: 0,
+        hAxis: {
+          minValue: new Date(),
+          maxValue: new Date(new Date().valueOf() + 1000 * 20),
+        },
       };
 
       const eventUpdates$ = this.eventsPool$.pipe(
@@ -182,6 +186,11 @@ export class MultipleWorkerPoolComponent {
           }
 
           if (rowsToUpdate.length) {
+            const currentDateTime = new Date().valueOf();
+            if (currentDateTime > chartOptions.hAxis.maxValue.valueOf() - 1000 * 2) {
+              chartOptions.hAxis.maxValue = new Date(currentDateTime + 1000 * 20);
+            }
+
             chart.draw(dataTable, chartOptions);
           }
         }),
