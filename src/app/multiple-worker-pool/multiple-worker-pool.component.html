@@ -1,4 +1,4 @@
-<h2>Multiple Worker Pool</h2>
+<h2>Multiple Worker Pool <span *ngIf="complete$ | async">(completed)</span></h2>
 
 Select multiple files to compute SHA-256 sum of, in pool of webworkers:
 <input type="file" multiple (change)="calculateSha256Multiple($event)" />

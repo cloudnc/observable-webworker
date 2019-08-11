@@ -1,6 +1,20 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { groupBy, map, mergeMap, pairwise, scan, shareReplay, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { animationFrameScheduler, combineLatest, interval, Observable, ReplaySubject, Subject } from 'rxjs';
+import {
+  filter,
+  groupBy,
+  map,
+  mergeMap,
+  pairwise,
+  scan,
+  shareReplay,
+  startWith,
+  switchMap,
+  switchMapTo,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import { fromWorkerPool } from '../../../projects/observable-webworker/src/lib/from-worker-pool';
 import { GoogleChartsService } from '../google-charts.service';
 import { FileHashEvent, ShaWorkerMessage, Thread } from '../sha-worker.types';
@@ -19,47 +33,38 @@ export class MultipleWorkerPoolComponent {
   private filenames: string[];
   public filenames$ = this.multiFilesToHash.pipe(
     map(files => files.map(f => f.name)),
-    tap(names => this.filenames = names),
+    tap(names => (this.filenames = names)),
     shareReplay(1),
   );
 
   public eventsPool$: Subject<ShaWorkerMessage> = new Subject();
+
+  public completedFiles$: Observable<string[]> = this.eventsPool$.pipe(
+    groupBy(m => m.file),
+    mergeMap(fileMessage$ =>
+      fileMessage$.pipe(
+        filter(e => e.fileEventType === FileHashEvent.HASH_RECEIVED),
+        take(1),
+      ),
+    ),
+    map(message => message.file),
+    scan<string>((files, file) => [...files, file], []),
+  );
+
+  public complete$: Observable<boolean> = combineLatest(this.filenames$, this.completedFiles$).pipe(
+    map(([files, completedFiles]) => files.length === completedFiles.length),
+  );
+
   public eventsTimedPool$: Observable<ShaWorkerMessage> = this.eventsPool$.pipe(
     groupBy(m => m.file),
-    mergeMap((fileMessage$) => {
+    mergeMap(fileMessage$ => {
       return fileMessage$.pipe(
         startWith(null),
         pairwise(),
         map(([a, b]) => {
-          let durationName: string;
-
-          if (a && b && a.fileEventType !== null && b.fileEventType !== null) {
-            switch (a.fileEventType + b.fileEventType) {
-              case FileHashEvent.SELECTED + FileHashEvent.PICKED_UP:
-                durationName = 'Queued, waiting for worker';
-                break;
-              case FileHashEvent.PICKED_UP + FileHashEvent.FILE_RECEIVED:
-                durationName = 'Transferring file to worker';
-                if (this.filenames.indexOf(b.file) < navigator.hardwareConcurrency - 1) {
-                  durationName = 'Starting worker, ' + durationName;
-                }
-                break;
-              case FileHashEvent.FILE_RECEIVED + FileHashEvent.FILE_READ:
-                durationName = 'Reading file';
-                break;
-              case FileHashEvent.FILE_READ + FileHashEvent.HASH_COMPUTED:
-                durationName = 'Computing hash';
-                break;
-              case FileHashEvent.HASH_COMPUTED + FileHashEvent.HASH_RECEIVED:
-                durationName = 'Returning hash result to main thread';
-                break;
-            }
-          }
-
           return {
             ...b,
             millisSinceLast: a ? b.timestamp.valueOf() - a.timestamp.valueOf() : null,
-            durationName,
           };
         }),
       );
@@ -84,21 +89,74 @@ export class MultipleWorkerPoolComponent {
       dataTable.addColumn({ type: 'date', id: 'Start' });
       dataTable.addColumn({ type: 'date', id: 'End' });
 
-      return this.eventsTimedPool$.pipe(
-        tap((event) => {
-          if (event.fileEventType === null || !event.durationName) {
+      const lastRow = new Map();
+
+      const eventUpdates$ = this.eventsPool$.pipe(
+        tap(event => {
+          if (event.fileEventType === null) {
             return;
           }
 
-          dataTable.addRow([
-            event.file,
-            event.durationName,
-            new Date(event.timestamp.valueOf() - event.millisSinceLast),
-            event.timestamp,
-          ]);
+          if (lastRow.has(event.file)) {
+            dataTable.setCell(lastRow.get(event.file), 3, event.timestamp);
+          }
+
+          if (event.fileEventType === FileHashEvent.HASH_RECEIVED) {
+            lastRow.delete(event.file);
+            return;
+          }
+
+          let durationName: string;
+          switch (event.fileEventType) {
+            case FileHashEvent.SELECTED:
+              durationName = 'Queued, waiting for worker';
+              break;
+            case FileHashEvent.PICKED_UP:
+              durationName = 'Transferring file to worker';
+              if (this.filenames.indexOf(event.file) < navigator.hardwareConcurrency - 1) {
+                durationName = 'Starting worker, ' + durationName;
+              }
+              break;
+            case FileHashEvent.FILE_RECEIVED:
+              durationName = 'Reading file';
+              break;
+            case FileHashEvent.FILE_READ:
+              durationName = 'Computing hash';
+              break;
+            case FileHashEvent.HASH_COMPUTED:
+              durationName = 'Returning hash result to main thread';
+              break;
+          }
+
+          const row = dataTable.addRow([event.file, durationName, event.timestamp, event.timestamp]);
+          lastRow.set(event.file, row);
 
           chart.draw(dataTable);
         }),
+      );
+
+      const realtimeUpdater$ = interval(0, animationFrameScheduler).pipe(
+        tap(() => {
+          const rowsToUpdate = Array.from(lastRow.values());
+
+          for (let row of rowsToUpdate) {
+            dataTable.setCell(row, 3, new Date());
+          }
+
+          if (rowsToUpdate.length) {
+            chart.draw(dataTable);
+          }
+        }),
+      );
+
+      return eventUpdates$.pipe(
+        switchMapTo(realtimeUpdater$),
+        takeUntil(
+          this.complete$.pipe(
+            filter(c => c),
+            take(1),
+          ),
+        ),
       );
     }),
   );
@@ -113,8 +171,7 @@ export class MultipleWorkerPoolComponent {
   }
 
   public hashMultipleFiles(files: File[]): Observable<ShaWorkerMessage> {
-
-    const queue: IterableIterator<File> = this.workPool(files)
+    const queue: IterableIterator<File> = this.workPool(files);
 
     return fromWorkerPool<Blob, ShaWorkerMessage>(index => {
       const worker = new Worker('../secure-hash-algorithm.worker', { name: `sha-worker-${index}`, type: 'module' });

@@ -6,7 +6,6 @@ export interface ShaWorkerMessage {
   fileEventType: FileHashEvent | null; // null if not a file event
   // values computed after emission
   millisSinceLast?: number;
-  durationName?: string | null;
 }
 
 export enum Thread {
