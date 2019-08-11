@@ -1,10 +1,18 @@
 <h2>Multiple Worker Pool</h2>
+<h3 *ngIf="status$ | async as status">({{ status }})</h3>
 
-Select multiple files to compute SHA-256 sum of, in pool of webworkers:
+<p>Select multiple files of varying sizes to compute SHA-256 sum of, in pool of webworkers:</p>
+
+<section>
+  <small>(No files are uploaded; they're kept entirely within your browser)</small>
+</section>
 <input type="file" multiple (change)="calculateSha256Multiple($event)" />
 
-<h3 [attr.data]="workResult$ | async">Events:</h3>
-<ol>
+<h3 [attr.data]="chartObserver$ | async">Timeline</h3>
+<div #timeline></div>
+
+<h3>Events:</h3>
+<ol [attr.data]="workResult$ | async">
   <li *ngFor="let event of eventListPool$ | async">
     <app-log-line *ngIf="filenames$ | async as filenames" [message]="event" [files]="filenames"></app-log-line>
   </li>
