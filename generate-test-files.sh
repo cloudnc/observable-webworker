@@ -2,9 +2,12 @@
 
 rm -rf test-files/*
 
-for i in {1..20}
+COUNT=${1:-20}
+MAXSIZE_MB=${2:-100}
+
+for i in $(seq 1 $COUNT)
 do
-    SIZE=$(( ( RANDOM % 100 )  + 1 ))
+    SIZE=$(( ( RANDOM % $MAXSIZE_MB )  + 1 ))
 
     WORD1=$( shuf -n1  /usr/share/dict/words )
     WORD2=$( shuf -n1  /usr/share/dict/words )

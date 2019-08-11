@@ -3,6 +3,9 @@
 Select multiple files to compute SHA-256 sum of, in pool of webworkers:
 <input type="file" multiple (change)="calculateSha256Multiple($event)" />
 
+<div #timeline style="height: 1000px;"></div>
+<div [attr.data]="chartObserver$ | async"></div>
+
 <h3 [attr.data]="workResult$ | async">Events:</h3>
 <ol>
   <li *ngFor="let event of eventListPool$ | async">
