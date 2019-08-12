@@ -29,9 +29,11 @@ Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/
 - [Worker Pool strategy](#worker-pool-strategy) - maximise the throughput of units of work by utilising all cores on the host machine
 
 ## Demo
+
 https://cloudnc.github.io/observable-webworker
 
 ## Tutorial
+
 https://dev.to/zakhenry/observable-webworkers-with-angular-8-4k6
 
 ## Install
@@ -89,9 +91,10 @@ export class HelloWorker implements DoWork<string, string> {
 ```
 
 ##### Important Note
-You **must** export your worker class (`export class ...`) from the file if you're using a minifier. If you don't, your 
-class will be removed from the bundle, causing your worker to do nothing! 
- 
+
+You **must** export your worker class (`export class ...`) from the file if you're using a minifier. If you don't, your
+class will be removed from the bundle, causing your worker to do nothing!
+
 You'll probably need to export the class anyway as you are unit testing it right?!
 
 ##### Don't like decorators? Don't use 'em!
@@ -157,28 +160,32 @@ worker thread, as the return type `string` is not `Transferable`.
 
 ## Worker Pool Strategy
 
-If you have a large amount of work that needs to be done, you can use the `fromWorkerPool` function to automatically 
+If you have a large amount of work that needs to be done, you can use the `fromWorkerPool` function to automatically
 manage a pool of workers to allow true concurrency of work, distributed evenly across all available cores.
 
 The worker pool strategy has the following features
-* Work can be provided as either `Observable`, `Array`, or `Iterable`
-* Concurrency is limited to `navigation.hardwareConcurrency - 1` to keep the main core free.
-  * This is a configurable option if you know you already have other workers running
-* Workers are only created when there is need for them (work is available)
-* Workers are terminated when there is no more work, freeing up threads for other processes
-  * for `Observable`, work is considered remaining while the observable is not completed
-  * for `Array`, work remains while there are items in the array
-  * for `Iterable`, work remains while the iterator is not `result.done` 
-* Workers are kept running while work remains, preventing unnecessary downloading of the worker script
-* Custom observable flattening operator can be passed, allowing for custom behaviour such as correlating the output 
-order with input order
-  * default operator is `mergeAll()`, which means the output from the webworker(s) is output as soon as available
 
-  
+- Work can be provided as either `Observable`, `Array`, or `Iterable`
+- Concurrency is limited to `navigation.hardwareConcurrency - 1` to keep the main core free.
+  - This is a configurable option if you know you already have other workers running
+- Workers are only created when there is need for them (work is available)
+- Workers are terminated when there is no more work, freeing up threads for other processes
+  - for `Observable`, work is considered remaining while the observable is not completed
+  - for `Array`, work remains while there are items in the array
+  - for `Iterable`, work remains while the iterator is not `result.done`
+- Workers are kept running while work remains, preventing unnecessary downloading of the worker script
+- Custom observable flattening operator can be passed, allowing for custom behaviour such as correlating the output
+  order with input order
+  - default operator is `mergeAll()`, which means the output from the webworker(s) is output as soon as available
+  - observable worker exports a custom operator `concurrentConcatAll()` which manages buffers internally to run the
+    workers in parallel, but output the results in the same order as the input went in. See [example](#custom-operator)
+    - Avoid using the built in RxJS operator `concatAll()` as it does not allow for concurrency, meaning while your
+      output would be in the expected order, only one worker would be used.
+
 ### Example
 
 In this simple example, we have a function that receives an array of files and returns an observable of the SHA-256 hex
-hashes of those files. For simplicity we're passing the primitives back and forth, however in reality you are likely to 
+hashes of those files. For simplicity we're passing the primitives back and forth, however in reality you are likely to
 want to construct your own interface to define the messages being passed to and from the worker.
 
 #### Main Thread
@@ -244,5 +251,24 @@ export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
 Note here that the worker class `implements DoWorkUnit<File, string>`. This is different to before where we implemented
 `DoWork` which had the slightly more complex signature of inputting an observable and outputting one.
 
-If using the `fromWorkerPool` strategy, you must only implement `DoWorkUnit` as it relies on the completion of the 
+If using the `fromWorkerPool` strategy, you must only implement `DoWorkUnit` as it relies on the completion of the
 returned observable to indicate that the unit of work is finished processing.
+
+### Custom Operator Example
+
+If you want the output from `fromWorkerPool` to be in the same order of the input stream/array/iterator you may pass the
+custom operator `concurrentConcatAll()` to the options of `fromWorkerPool`:
+
+```ts
+// src/readme/concurrent-concat-all.main.ts
+
+import { Observable } from 'rxjs';
+import { fromWorkerPool, concurrentConcatAll } from 'observable-webworker';
+
+export function computeHashes(files: File[]): Observable<string> {
+  return fromWorkerPool<File, string>(() => new Worker('./transferable.worker', { type: 'module' }), files, {
+    flattenOperator: concurrentConcatAll(), // <-- add this
+  });
+}
+
+```
