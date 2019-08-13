@@ -1,6 +1,5 @@
-import { Observable, of, Subject, zip } from 'rxjs';
+import { Observable, ObservableInput, of, Subject, zip } from 'rxjs';
 import { finalize, map, mergeAll, tap } from 'rxjs/operators';
-import { ObservableInput } from 'rxjs/src/internal/types';
 import { fromWorker } from './from-worker';
 
 interface LazyWorker {
