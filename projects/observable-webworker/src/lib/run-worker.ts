@@ -1,13 +1,6 @@
 import { fromEvent, Notification, Observable, Subscription } from 'rxjs';
-import { NotificationKind } from 'rxjs/internal/Notification';
-import { concatMap, dematerialize, filter, finalize, map, materialize, tap } from 'rxjs/operators';
-import {
-  DoTransferableWork,
-  DoWork,
-  DoWorkUnit,
-  GenericWorkerMessage,
-  WorkerMessageNotification,
-} from './observable-worker.types';
+import { concatMap, dematerialize, filter, map, materialize } from 'rxjs/operators';
+import { DoTransferableWork, DoWork, DoWorkUnit, WorkerMessageNotification } from './observable-worker.types';
 
 export type ObservableWorkerConstructor<I = any, O = any> = new (...args) => DoWork<I, O> | DoWorkUnit<I, O>;
 
@@ -35,7 +28,7 @@ export function getWorkerResult<I, O>(
     map((e: WorkerMessageNotification<I>): Notification<I> => e.data),
     map((n: Notification<I>) => new Notification(n.kind, n.value, n.error)),
     // ignore complete, the calling thread will manage termination of the stream
-    filter(n => n.kind !== NotificationKind.COMPLETE),
+    filter(n => n.kind !== 'C'),
     dematerialize(),
   );
 

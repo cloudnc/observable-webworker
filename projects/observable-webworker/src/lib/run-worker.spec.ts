@@ -1,4 +1,4 @@
-import { from, Observable, Observer, of, Notification, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Notification, Observable, of } from 'rxjs';
 import { NotificationKind } from 'rxjs/internal/Notification';
 import {
   DoTransferableWork,
@@ -7,7 +7,7 @@ import {
   DoWorkUnit,
   WorkerMessageNotification,
 } from './observable-worker.types';
-import { getWorkerResult, runWorker, workerIsTransferableType, workerIsUnitType } from './run-worker';
+import { runWorker, workerIsTransferableType, workerIsUnitType } from './run-worker';
 
 describe('workerIsTransferableType', () => {
   it('should identify a worker as being able to map transferables', () => {
