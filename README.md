@@ -181,7 +181,7 @@ order with input order
   
 ### Example
 
-In this simple example, we have a function that receives an array of files and returns an observable of the SHA-256 hex
+In this simple example, we have a function that receives an array of files and returns an observable of the MD5 sum
 hashes of those files. For simplicity we're passing the primitives back and forth, however in reality you are likely to 
 want to construct your own interface to define the messages being passed to and from the worker.
 
