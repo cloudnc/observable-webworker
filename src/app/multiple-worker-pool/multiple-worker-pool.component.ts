@@ -14,7 +14,6 @@ import {
   map,
   mergeMap,
   observeOn,
-  pairwise,
   scan,
   shareReplay,
   startWith,
@@ -87,27 +86,27 @@ export class MultipleWorkerPoolComponent {
     }),
   );
 
-  public eventsTimedPool$: Observable<HashWorkerMessage> = this.eventsPool$.pipe(
-    groupBy(m => m.file),
-    mergeMap(fileMessage$ => {
-      return fileMessage$.pipe(
-        startWith(null),
-        pairwise(),
-        map(([a, b]) => {
-          return {
-            ...b,
-            millisSinceLast: a ? b.timestamp.valueOf() - a.timestamp.valueOf() : null,
-          };
-        }),
-      );
-    }),
-  );
-
-  public eventListPool$: Observable<HashWorkerMessage[]> = this.eventsTimedPool$.pipe(
+  public eventListPool$: Observable<HashWorkerMessage[]> = this.eventsPool$.pipe(
     scan<HashWorkerMessage>((list, event) => {
       list.push(event);
       return list;
     }, []),
+    map(events => {
+      const lastEventMap = new Map();
+
+      return events
+        .sort((a, b) => a.timestamp.valueOf() - b.timestamp.valueOf())
+        .map(event => {
+          const lastEvent = lastEventMap.get(event.file);
+
+          lastEventMap.set(event.file, event);
+
+          return {
+            ...event,
+            millisSinceLast: lastEvent ? event.timestamp.valueOf() - lastEvent.timestamp.valueOf() : null,
+          };
+        });
+    }),
   );
 
   public chartObserver$ = combineLatest(this.filenames$, this.googleChartService.getVisualisation('timeline')).pipe(
@@ -232,7 +231,7 @@ export class MultipleWorkerPoolComponent {
             ...res,
             fileEventType: FileHashEvent.HASH_RECEIVED,
             timestamp: new Date(),
-            message: 'Hash received',
+            message: 'hash received',
             thread: Thread.MAIN,
           });
         }

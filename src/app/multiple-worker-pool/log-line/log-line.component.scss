@@ -13,9 +13,24 @@ span {
 
 .timedelta {
   width: 70px;
+  text-align: right;
+  margin-right: 10px;
 }
 
 .thread {
   font-weight: bold;
   width: 70px;
+  &.main {
+    color: darkblue;
+  }
+  &.worker {
+    color: darkgreen;
+  }
+}
+
+.file {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 300px;
+  white-space: nowrap;
 }

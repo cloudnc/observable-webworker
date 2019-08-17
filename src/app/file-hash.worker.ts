@@ -23,8 +23,7 @@ export class FileHashWorker implements DoWorkUnit<File, HashWorkerMessage> {
       .pipe(
         tap(() => output$.next(log(FileHashEvent.FILE_READ, `read file`))),
         map(arrayBuffer => md5(arrayBuffer)),
-        tap(() => output$.next(log(FileHashEvent.HASH_COMPUTED, `hashed file`))),
-        map((digest: string): HashWorkerMessage => log(null, `hash result: ${digest}`)),
+        map((digest: string): HashWorkerMessage => log(FileHashEvent.HASH_COMPUTED, `hash result: ${digest}`)),
         tap(out => {
           output$.next(out);
           output$.complete();
