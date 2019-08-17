@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { ShaWorkerMessage } from '../../sha-worker.types';
+import { HashWorkerMessage } from '../../hash-worker.types';
 
 @Component({
   selector: 'app-log-line',
   templateUrl: './log-line.component.html',
   styleUrls: ['./log-line.component.scss'],
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogLineComponent implements OnInit {
-  @Input() message: ShaWorkerMessage;
+  @Input() message: HashWorkerMessage;
   @Input() files: string[];
 
   public color: string;

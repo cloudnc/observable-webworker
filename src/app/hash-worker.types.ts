@@ -1,4 +1,4 @@
-export interface ShaWorkerMessage {
+export interface HashWorkerMessage {
   file?: string;
   timestamp: Date;
   message: string;

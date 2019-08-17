@@ -1,12 +1,12 @@
 <h2>Multiple Worker Pool</h2>
 <h3 *ngIf="status$ | async as status">({{ status }})</h3>
 
-<p>Select multiple files of varying sizes to compute SHA-256 sum of, in pool of webworkers:</p>
+<p>Select multiple files of varying sizes to compute MD5 sum of, in pool of webworkers:</p>
 
 <section>
   <small>(No files are uploaded; they're kept entirely within your browser)</small>
 </section>
-<input type="file" multiple (change)="calculateSha256Multiple($event)" />
+<input type="file" multiple (change)="calculateMD5Multiple($event)" />
 
 <h3 [attr.data]="chartObserver$ | async">Timeline</h3>
 <div #timeline></div>

@@ -1,15 +1,16 @@
+import * as md5 from 'js-md5';
 import { ObservableWorker } from 'observable-webworker';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
+import { map, take, tap } from 'rxjs/operators';
 import { DoWorkUnit } from '../../projects/observable-webworker/src/lib/observable-worker.types';
-import { FileHashEvent, ShaWorkerMessage, Thread } from './sha-worker.types';
+import { FileHashEvent, HashWorkerMessage, Thread } from './hash-worker.types';
 
 @ObservableWorker()
-export class SecureHashAlgorithmWorker implements DoWorkUnit<File, ShaWorkerMessage> {
-  public workUnit(input: File): Observable<ShaWorkerMessage> {
-    const output$: Subject<ShaWorkerMessage> = new ReplaySubject(Infinity);
+export class FileHashWorker implements DoWorkUnit<File, HashWorkerMessage> {
+  public workUnit(input: File): Observable<HashWorkerMessage> {
+    const output$: Subject<HashWorkerMessage> = new ReplaySubject(Infinity);
 
-    const log = (fileEventType: FileHashEvent, message: string): ShaWorkerMessage => ({
+    const log = (fileEventType: FileHashEvent, message: string): HashWorkerMessage => ({
       file: input.name,
       timestamp: new Date(),
       message,
@@ -21,9 +22,9 @@ export class SecureHashAlgorithmWorker implements DoWorkUnit<File, ShaWorkerMess
     this.readFileAsArrayBuffer(input)
       .pipe(
         tap(() => output$.next(log(FileHashEvent.FILE_READ, `read file`))),
-        switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
+        map(arrayBuffer => md5(arrayBuffer)),
         tap(() => output$.next(log(FileHashEvent.HASH_COMPUTED, `hashed file`))),
-        map((digest: ArrayBuffer): ShaWorkerMessage => log(null, `hash result: ${this.arrayBufferToHex(digest)}`)),
+        map((digest: string): HashWorkerMessage => log(null, `hash result: ${digest}`)),
         tap(out => {
           output$.next(out);
           output$.complete();
@@ -33,16 +34,6 @@ export class SecureHashAlgorithmWorker implements DoWorkUnit<File, ShaWorkerMess
       .subscribe();
 
     return output$;
-  }
-
-  private arrayBufferToHex(buffer: ArrayBuffer): string {
-    return Array.from(new Uint8Array(buffer))
-      .map(value => {
-        const hexCode = value.toString(16);
-        const paddedHexCode = hexCode.padStart(2, '0');
-        return paddedHexCode;
-      })
-      .join('');
   }
 
   private readFileAsArrayBuffer(blob: Blob): Observable<ArrayBuffer> {
