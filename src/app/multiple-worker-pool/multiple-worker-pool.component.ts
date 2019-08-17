@@ -26,7 +26,7 @@ import {
 } from 'rxjs/operators';
 import { fromWorkerPool } from '../../../projects/observable-webworker/src/lib/from-worker-pool';
 import { GoogleChartsService } from '../google-charts.service';
-import { FileHashEvent, ShaWorkerMessage, Thread } from '../sha-worker.types';
+import { FileHashEvent, HashWorkerMessage, Thread } from '../hash-worker.types';
 import TimelineOptions = google.visualization.TimelineOptions;
 
 @Component({
@@ -50,7 +50,7 @@ export class MultipleWorkerPoolComponent {
     shareReplay(1),
   );
 
-  public eventsPool$: Subject<ShaWorkerMessage> = new Subject();
+  public eventsPool$: Subject<HashWorkerMessage> = new Subject();
 
   public completedFiles$: Observable<string[]> = this.filenames$.pipe(
     switchMap(() =>
@@ -87,7 +87,7 @@ export class MultipleWorkerPoolComponent {
     }),
   );
 
-  public eventsTimedPool$: Observable<ShaWorkerMessage> = this.eventsPool$.pipe(
+  public eventsTimedPool$: Observable<HashWorkerMessage> = this.eventsPool$.pipe(
     groupBy(m => m.file),
     mergeMap(fileMessage$ => {
       return fileMessage$.pipe(
@@ -103,8 +103,8 @@ export class MultipleWorkerPoolComponent {
     }),
   );
 
-  public eventListPool$: Observable<ShaWorkerMessage[]> = this.eventsTimedPool$.pipe(
-    scan<ShaWorkerMessage>((list, event) => {
+  public eventListPool$: Observable<HashWorkerMessage[]> = this.eventsTimedPool$.pipe(
+    scan<HashWorkerMessage>((list, event) => {
       list.push(event);
       return list;
     }, []),
@@ -217,11 +217,11 @@ export class MultipleWorkerPoolComponent {
     }
   }
 
-  public hashMultipleFiles(files: File[]): Observable<ShaWorkerMessage> {
+  public hashMultipleFiles(files: File[]): Observable<HashWorkerMessage> {
     const queue: IterableIterator<File> = this.workPool(files);
 
-    return fromWorkerPool<Blob, ShaWorkerMessage>(index => {
-      const worker = new Worker('../secure-hash-algorithm.worker', { name: `sha-worker-${index}`, type: 'module' });
+    return fromWorkerPool<Blob, HashWorkerMessage>(index => {
+      const worker = new Worker('../file-hash.worker', { name: `hash-worker-${index}`, type: 'module' });
       this.eventsPool$.next(this.logMessage(null, `worker ${index} created`));
       return worker;
     }, queue).pipe(
@@ -240,7 +240,7 @@ export class MultipleWorkerPoolComponent {
     );
   }
 
-  public calculateSha256Multiple($event): void {
+  public calculateMD5Multiple($event): void {
     const files: File[] = Array.from($event.target.files);
     this.multiFilesToHash.next(files);
     for (const file of files) {
@@ -248,7 +248,7 @@ export class MultipleWorkerPoolComponent {
     }
   }
 
-  private logMessage(eventType: FileHashEvent | null, message: string, file?: string): ShaWorkerMessage {
+  private logMessage(eventType: FileHashEvent | null, message: string, file?: string): HashWorkerMessage {
     return { message, file, timestamp: new Date(), thread: Thread.MAIN, fileEventType: eventType };
   }
 }

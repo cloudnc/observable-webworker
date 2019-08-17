@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable, of, Subject } from 'rxjs';
 import { scan, switchMap, tap } from 'rxjs/operators';
 import { fromWorker } from '../../../projects/observable-webworker/src/lib/from-worker';
-import { ShaWorkerMessage } from '../sha-worker.types';
+import { HashWorkerMessage } from '../hash-worker.types';
 
 @Component({
   selector: 'app-single-worker',
@@ -23,18 +23,18 @@ export class SingleWorkerComponent {
 
   public hashResult$ = this.filesToHash.pipe(switchMap(file => this.hashFile(file)));
 
-  public calculateSha256($event): void {
+  public calculateMD5($event): void {
     this.events$.next('Main: file selected');
     const file: File = $event.target.files[0];
 
     this.filesToHash.next(file);
   }
 
-  public hashFile(file: Blob): Observable<ShaWorkerMessage> {
+  public hashFile(file: Blob): Observable<HashWorkerMessage> {
     const input$: Observable<Blob> = of(file);
 
-    return fromWorker<Blob, ShaWorkerMessage>(() => {
-      const worker = new Worker('../secure-hash-algorithm.worker', { name: 'sha-worker', type: 'module' });
+    return fromWorker<Blob, HashWorkerMessage>(() => {
+      const worker = new Worker('../file-hash.worker', { name: 'md5-worker', type: 'module' });
       this.events$.next('Main: worker created');
       return worker;
     }, input$).pipe(

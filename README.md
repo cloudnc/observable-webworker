@@ -190,7 +190,7 @@ import { Observable } from 'rxjs';
 import { fromWorkerPool } from 'observable-webworker';
 
 export function computeHashes(files: File[]): Observable<string> {
-  return fromWorkerPool<File, string>(() => new Worker('./transferable.worker', { type: 'module' }), files);
+  return fromWorkerPool<File, string>(() => new Worker('./worker-pool-hash.worker', { type: 'module' }), files);
 }
 
 ```
@@ -200,23 +200,15 @@ export function computeHashes(files: File[]): Observable<string> {
 ```ts
 // src/readme/worker-pool-hash.worker.ts
 
+import * as md5 from 'js-md5';
+import { DoWorkUnit, ObservableWorker } from 'observable-webworker';
 import { Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { DoWorkUnit, ObservableWorker } from '../../projects/observable-webworker/src/public-api';
+import { map } from 'rxjs/operators';
 
 @ObservableWorker()
 export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
   public workUnit(input: File): Observable<string> {
-    return this.readFileAsArrayBuffer(input).pipe(
-      switchMap(arrayBuffer => crypto.subtle.digest('SHA-256', arrayBuffer)),
-      map((digest: ArrayBuffer) => this.arrayBufferToHex(digest)),
-    );
-  }
-
-  private arrayBufferToHex(buffer: ArrayBuffer): string {
-    return Array.from(new Uint8Array(buffer))
-      .map(value => value.toString(16).padStart(2, '0'))
-      .join('');
+    return this.readFileAsArrayBuffer(input).pipe(map(arrayBuffer => md5(arrayBuffer)));
   }
 
   private readFileAsArrayBuffer(blob: Blob): Observable<ArrayBuffer> {

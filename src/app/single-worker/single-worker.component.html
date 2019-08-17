@@ -1,7 +1,7 @@
 <h2>Single Worker</h2>
 
-Select file to compute SHA-256 sum of, in webworker:
-<input type="file" (change)="calculateSha256($event)" />
+Select file to compute MD5 sum of, in webworker:
+<input type="file" (change)="calculateMD5($event)" />
 
 <h3>Events:</h3>
 <ol [attr.data]="hashResult$ | async">
