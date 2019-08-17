@@ -1,4 +1,4 @@
-# ObservableWebWorker
+# Observable Webworker
 
 Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) with [RxJS](https://rxjs-dev.firebaseapp.com/guide/overview) observables
 
@@ -6,6 +6,10 @@ Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/
 [![Build Status](https://travis-ci.org/cloudnc/observable-webworker.svg?branch=master)](https://travis-ci.org/cloudnc/observable-webworker)
 [![codecov](https://codecov.io/gh/cloudnc/observable-webworker/branch/master/graph/badge.svg)](https://codecov.io/gh/cloudnc/observable-webworker)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](https://commitizen.github.io/cz-cli/)
+[![License](https://img.shields.io/github/license/cloudnc/observable-webworker)](https://raw.githubusercontent.com/cloudnc/observable-webworker/master/LICENSE)
+![npm peer dependency version](https://img.shields.io/npm/dependency-version/observable-webworker/peer/rxjs)
+
+[![NPM](https://nodei.co/npm/observable-webworker.png?compact=true)](https://nodei.co/npm/observable-webworker/)
 
 # Features
 
