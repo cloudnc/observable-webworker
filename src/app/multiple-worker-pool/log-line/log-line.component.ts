@@ -16,6 +16,6 @@ export class LogLineComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    this.color = `hsl(${(this.files.indexOf(this.message.file) / this.files.length) * 360}, 50%, 50%)`;
+    this.color = `hsl(${(this.files.indexOf(this.message.file) / this.files.length) * 360}, 70%, 60%)`;
   }
 }
