@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "peerDependencies": {
-    "rxjs": "~6.4.0"
+    "rxjs": ">=6.4.0"
   },
   "keywords": [
     "Rx",
