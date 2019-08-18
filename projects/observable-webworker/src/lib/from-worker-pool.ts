@@ -12,6 +12,7 @@ interface LazyWorker {
 
 export interface WorkerPoolOptions<I, O> {
   workerCount?: number;
+  fallbackWorkerCount?: number;
   flattenOperator?: (input$: Observable<Observable<O>>) => Observable<O>;
   selectTransferables?: (input: I) => Transferable[];
 }
@@ -24,7 +25,8 @@ export function fromWorkerPool<I, O>(
   const {
     // tslint:disable-next-line:no-unnecessary-initializer
     selectTransferables = undefined,
-    workerCount = navigator.hardwareConcurrency - 1,
+    workerCount = navigator.hardwareConcurrency ? navigator.hardwareConcurrency - 1 : null,
+    fallbackWorkerCount = 3,
     flattenOperator = mergeAll<O>(),
   } = options || {};
 
@@ -35,7 +37,9 @@ export function fromWorkerPool<I, O>(
     let sent = 0;
     let finished = false;
 
-    const lazyWorkers: LazyWorker[] = Array.from({ length: workerCount }).map((_, index) => {
+    const lazyWorkers: LazyWorker[] = Array.from({
+      length: workerCount !== null ? workerCount : fallbackWorkerCount,
+    }).map((_, index) => {
       return {
         _cachedWorker: null,
         factory() {

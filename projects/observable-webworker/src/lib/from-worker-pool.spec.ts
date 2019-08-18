@@ -205,6 +205,36 @@ describe('fromWorkerPool', () => {
     });
   });
 
+  describe('with undefined navigator.hardwareConcurrency', () => {
+    it('runs a default fallback number of workers', () => {
+      spyOnProperty(window.navigator, 'hardwareConcurrency').and.returnValue(undefined);
+
+      const input = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      const testWorkerStream$ = fromWorkerPool<number, number>(workerFactorySpy, input);
+      const subscriptionSpy = jasmine.createSpy('subscriptionSpy');
+      const sub = testWorkerStream$.subscribe(subscriptionSpy);
+
+      expect(workerFactorySpy).toHaveBeenCalledTimes(3);
+
+      sub.unsubscribe();
+    });
+
+    it('runs a configured fallback number of workers', () => {
+      spyOnProperty(window.navigator, 'hardwareConcurrency').and.returnValue(undefined);
+
+      const input = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      const testWorkerStream$ = fromWorkerPool<number, number>(workerFactorySpy, input, { fallbackWorkerCount: 2 });
+      const subscriptionSpy = jasmine.createSpy('subscriptionSpy');
+      const sub = testWorkerStream$.subscribe(subscriptionSpy);
+
+      expect(workerFactorySpy).toHaveBeenCalledTimes(2);
+
+      sub.unsubscribe();
+    });
+  });
+
   describe('output strategy', () => {
     it('[default] outputs results as they are available', fakeAsync(() => {
       const workerCount = 7;
