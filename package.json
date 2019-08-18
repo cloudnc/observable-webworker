@@ -31,7 +31,7 @@
     "report-coverage": "codecov",
     "------------------ QUICK COMMANDS ------------------": "",
     "lint:fix": "yarn demo:lint:fix && yarn prettier:write",
-    "test": "yarn lib:test:watch",
+    "test": "yarn lib:test:watch --code-coverage",
     "start": "yarn demo:start",
     "commit": "git add . && git-cz"
   },
