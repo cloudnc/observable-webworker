@@ -38,6 +38,10 @@ https://cloudnc.github.io/observable-webworker
 ## Tutorial
 https://dev.to/zakhenry/observable-webworkers-with-angular-8-4k6
 
+## Articles
+* [Observable Web Workers, a deep dive into a realistic use case](https://dev.to/zakhenry/observable-web-workers-a-deep-dive-into-a-realistic-use-case-4042)
+* [Parallel computation in the browser with observable webworkers](https://dev.to/zakhenry/parallel-computation-in-the-browser-with-observable-webworkers-hci)
+
 ## Install
 
 Install the [npm package](https://www.npmjs.com/package/observable-webworker): `observable-webworker`
