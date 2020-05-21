@@ -6,7 +6,6 @@ interface LazyWorker {
   factory: () => Worker;
   terminate: () => void;
   processing: boolean;
-  started: boolean;
   index: number;
 }
 
@@ -40,22 +39,20 @@ export function fromWorkerPool<I, O>(
     const lazyWorkers: LazyWorker[] = Array.from({
       length: workerCount !== null ? workerCount : fallbackWorkerCount,
     }).map((_, index) => {
+      let cachedWorker: Worker | null = null;
       return {
-        _cachedWorker: null,
         factory() {
-          if (!this._cachedWorker) {
-            this._cachedWorker = workerConstructor(index);
-            this.started = true;
+          if (!cachedWorker) {
+            cachedWorker = workerConstructor(index);
           }
-          return this._cachedWorker;
+          return cachedWorker;
         },
         terminate() {
-          if (this.started && !this.processing) {
-            this._cachedWorker.terminate();
+          if (!this.processing && cachedWorker) {
+            cachedWorker.terminate();
           }
         },
         processing: false,
-        started: false,
         index,
       };
     });
