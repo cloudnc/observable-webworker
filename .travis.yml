@@ -27,6 +27,8 @@ script:
   # build
   - yarn run lib:build:prod
   - yarn run demo:build:prod --progress=false --base-href "https://cloudnc.github.io/observable-webworker/"
+  # incremental code quality checking
+  - yarn run betterer
   # e2e tests
   - sed -i 's/<base href="https:\/\/cloudnc.github.io\/observable-webworker\/">/<base href="\/">/g' dist/observable-webworker-demo/index.html
   - cd ./dist/observable-webworker-demo
