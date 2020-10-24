@@ -34,19 +34,15 @@ describe('fromWorker', () => {
 
     input$.next(1);
 
-    expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 1 }),
-    );
+    expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: 1 }));
 
     input$.next(2);
 
-    expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 2 }),
-    );
+    expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: 2 }));
 
     input$.complete();
 
-    expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: NotificationKind.COMPLETE }));
+    expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'C' }));
 
     sub.unsubscribe();
 
@@ -58,9 +54,7 @@ describe('fromWorker', () => {
 
     input$.error('oops!');
 
-    expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.ERROR, error: 'oops!' }),
-    );
+    expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'E', error: 'oops!' }));
   });
 
   it('should assign methods to the worker events that materialize into observable output, terminating the worker on completion', () => {
@@ -75,7 +69,7 @@ describe('fromWorker', () => {
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.NEXT, 1),
+        data: new Notification('N', 1),
       }),
     );
 
@@ -83,7 +77,7 @@ describe('fromWorker', () => {
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.COMPLETE),
+        data: new Notification('C'),
       }),
     );
 
@@ -98,7 +92,7 @@ describe('fromWorker', () => {
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.ERROR, undefined, 'Nope!'),
+        data: new Notification('E', undefined, 'Nope!'),
       }),
     );
 
@@ -171,20 +165,19 @@ describe('fromWorker', () => {
 
     const sub = testTransferableStream.subscribe(subscriptionSpy);
 
-    expect(stubWorker.postMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining({ kind: NotificationKind.NEXT, value: testValue }),
-      [testValue.buffer],
-    );
+    expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: testValue }), [
+      testValue.buffer,
+    ]);
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.NEXT, 1),
+        data: new Notification('N', 1),
       }),
     );
 
     stubWorker.onmessage(
       new MessageEvent('message', {
-        data: new Notification(NotificationKind.COMPLETE),
+        data: new Notification('C'),
       }),
     );
 

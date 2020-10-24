@@ -55,9 +55,7 @@ describe('fromWorkerPool', () => {
 
       expect(workerFactorySpy).toHaveBeenCalledTimes(navigator.hardwareConcurrency - 1);
 
-      expect(stubbedWorkers[0].postMessage).toHaveBeenCalledWith(
-        jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 0 }),
-      );
+      expect(stubbedWorkers[0].postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: 0 }));
 
       sub.unsubscribe();
     });
@@ -90,11 +88,11 @@ describe('fromWorkerPool', () => {
       }
 
       for (let i = 0; i < navigator.hardwareConcurrency - 1; i++) {
-        const stubWorker = stubbedWorkers[i];
+        const stubWorker = stubbedWorkers[i]!;
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, i),
+            data: new Notification('N', i),
           }),
         );
 
@@ -102,7 +100,7 @@ describe('fromWorkerPool', () => {
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.COMPLETE),
+            data: new Notification('C'),
           }),
         );
 
@@ -131,17 +129,17 @@ describe('fromWorkerPool', () => {
         .subscribe(subscriptionSpy);
 
       for (const i of input) {
-        const stubWorker = stubbedWorkers[i % workerCount];
+        const stubWorker = stubbedWorkers[i % workerCount]!;
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, i),
+            data: new Notification('N', i),
           }),
         );
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.COMPLETE),
+            data: new Notification('C'),
           }),
         );
       }
@@ -183,17 +181,17 @@ describe('fromWorkerPool', () => {
         .subscribe(subscriptionSpy);
 
       for (const i of generator()) {
-        const stubWorker = stubbedWorkers[i % workerCount];
+        const stubWorker = stubbedWorkers[i % workerCount]!;
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, i),
+            data: new Notification('N', i),
           }),
         );
 
         stubWorker.onmessage(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.COMPLETE),
+            data: new Notification('C'),
           }),
         );
       }
@@ -254,17 +252,17 @@ describe('fromWorkerPool', () => {
 
       for (let i = 0; i < input.length; i++) {
         setTimeout(() => {
-          const stubWorker = stubbedWorkers[i % workerCount];
+          const stubWorker = stubbedWorkers[i % workerCount]!;
 
           stubWorker.onmessage(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.NEXT, input[i]),
+              data: new Notification('N', input[i]),
             }),
           );
 
           stubWorker.onmessage(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.COMPLETE),
+              data: new Notification('C'),
             }),
           );
         }, 10 - i); // output each result in successively less time for each value
@@ -321,17 +319,17 @@ describe('fromWorkerPool', () => {
 
       for (let i = 0; i < input.length; i++) {
         setTimeout(() => {
-          const stubWorker = stubbedWorkers[i % workerCount];
+          const stubWorker = stubbedWorkers[i % workerCount]!;
 
           stubWorker.onmessage(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.NEXT, input[i]),
+              data: new Notification('N', input[i]),
             }),
           );
 
           stubWorker.onmessage(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.COMPLETE),
+              data: new Notification('C'),
             }),
           );
         }, 10 - i); // output each result in successively less time for each value

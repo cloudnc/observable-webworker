@@ -17,21 +17,21 @@ describe('@ObservableWorker', () => {
     }
 
     const nextEvent: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, 0),
+      data: new Notification('N', 0),
     });
 
     self.dispatchEvent(nextEvent);
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.NEXT,
+        kind: 'N',
         value: 0,
       }),
     );
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.COMPLETE,
+        kind: 'C',
       }),
     );
   });

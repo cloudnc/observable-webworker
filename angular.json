@@ -38,10 +38,8 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
@@ -50,6 +48,10 @@
                   "type": "initial",
                   "maximumWarning": "2mb",
                   "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
                 }
               ]
             }
@@ -104,6 +106,11 @@
           "options": {
             "tsConfig": "projects/observable-webworker/tsconfig.lib.json",
             "project": "projects/observable-webworker/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/observable-webworker/tsconfig.lib.prod.json"
+            }
           }
         },
         "test": {
