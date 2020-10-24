@@ -4,6 +4,8 @@ import { Notification, NotificationKind } from 'rxjs/internal/Notification';
 import { reduce } from 'rxjs/operators';
 import { fromWorkerPool } from './from-worker-pool';
 
+// tslint:disable:no-non-null-assertion
+
 describe('fromWorkerPool', () => {
   let stubbedWorkers: Worker[];
 
@@ -88,9 +90,9 @@ describe('fromWorkerPool', () => {
       }
 
       for (let i = 0; i < navigator.hardwareConcurrency - 1; i++) {
-        const stubWorker = stubbedWorkers[i]!;
+        const stubWorker = stubbedWorkers[i];
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
             data: new Notification('N', i),
           }),
@@ -98,7 +100,7 @@ describe('fromWorkerPool', () => {
 
         expect(subscriptionSpy).toHaveBeenCalledWith(i);
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
             data: new Notification('C'),
           }),
@@ -129,15 +131,15 @@ describe('fromWorkerPool', () => {
         .subscribe(subscriptionSpy);
 
       for (const i of input) {
-        const stubWorker = stubbedWorkers[i % workerCount]!;
+        const stubWorker = stubbedWorkers[i % workerCount];
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
             data: new Notification('N', i),
           }),
         );
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
             data: new Notification('C'),
           }),
@@ -181,15 +183,15 @@ describe('fromWorkerPool', () => {
         .subscribe(subscriptionSpy);
 
       for (const i of generator()) {
-        const stubWorker = stubbedWorkers[i % workerCount]!;
+        const stubWorker = stubbedWorkers[i % workerCount];
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
             data: new Notification('N', i),
           }),
         );
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
             data: new Notification('C'),
           }),
@@ -252,15 +254,15 @@ describe('fromWorkerPool', () => {
 
       for (let i = 0; i < input.length; i++) {
         setTimeout(() => {
-          const stubWorker = stubbedWorkers[i % workerCount]!;
+          const stubWorker = stubbedWorkers[i % workerCount];
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
               data: new Notification('N', input[i]),
             }),
           );
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
               data: new Notification('C'),
             }),
@@ -319,15 +321,15 @@ describe('fromWorkerPool', () => {
 
       for (let i = 0; i < input.length; i++) {
         setTimeout(() => {
-          const stubWorker = stubbedWorkers[i % workerCount]!;
+          const stubWorker = stubbedWorkers[i % workerCount];
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
               data: new Notification('N', input[i]),
             }),
           );
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
               data: new Notification('C'),
             }),

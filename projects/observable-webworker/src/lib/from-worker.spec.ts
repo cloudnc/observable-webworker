@@ -1,13 +1,13 @@
 import { Observable, Observer, of, Subject } from 'rxjs';
-import { Notification, NotificationKind } from 'rxjs/internal/Notification';
+import { Notification } from 'rxjs/internal/Notification';
 import { fromWorker } from './from-worker';
-
+// tslint:disable:no-non-null-assertion
 describe('fromWorker', () => {
   let input$: Subject<number>;
 
   let stubWorker: Worker;
 
-  let workerFactorySpy;
+  let workerFactorySpy: jasmine.Spy<() => Worker>;
 
   let stubbedWorkerStream: Observable<number>;
 
@@ -67,7 +67,7 @@ describe('fromWorker', () => {
 
     expect(subscriptionNextSpy).not.toHaveBeenCalled();
 
-    stubWorker.onmessage(
+    stubWorker.onmessage!(
       new MessageEvent('message', {
         data: new Notification('N', 1),
       }),
@@ -75,7 +75,7 @@ describe('fromWorker', () => {
 
     expect(subscriptionNextSpy).toHaveBeenCalledWith(1);
 
-    stubWorker.onmessage(
+    stubWorker.onmessage!(
       new MessageEvent('message', {
         data: new Notification('C'),
       }),
@@ -106,7 +106,7 @@ describe('fromWorker', () => {
     const subscriptionErrorSpy = jasmine.createSpy('subscriptionErrorSpy');
     const sub = stubbedWorkerStream.subscribe({ error: subscriptionErrorSpy });
 
-    stubWorker.onerror(new ErrorEvent('error', { message: 'Argh!' }));
+    stubWorker.onerror!(new ErrorEvent('error', { message: 'Argh!' }));
 
     expect(subscriptionErrorSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
