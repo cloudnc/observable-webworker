@@ -43,7 +43,9 @@ jobs:
         run: cp LICENSE dist/observable-webworker
       - name: Build Demo
         if: contains('refs/heads/master', github.ref)
-        run: yarn run demo:build:prod --progress=false --base-href "https://cloudnc.github.io/observable-webworker/"
+        run: |
+          yarn run demo:build:prod --progress=false --base-href "https://cloudnc.github.io/observable-webworker/"
+          yarn lib:build:prod
       - name: Release
         if: contains('refs/heads/master refs/heads/next', github.ref)
         env:

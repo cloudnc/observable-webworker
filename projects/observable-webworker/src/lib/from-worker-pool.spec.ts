@@ -4,6 +4,8 @@ import { Notification, NotificationKind } from 'rxjs/internal/Notification';
 import { reduce } from 'rxjs/operators';
 import { fromWorkerPool } from './from-worker-pool';
 
+// tslint:disable:no-non-null-assertion
+
 describe('fromWorkerPool', () => {
   let stubbedWorkers: Worker[];
 
@@ -55,9 +57,7 @@ describe('fromWorkerPool', () => {
 
       expect(workerFactorySpy).toHaveBeenCalledTimes(navigator.hardwareConcurrency - 1);
 
-      expect(stubbedWorkers[0].postMessage).toHaveBeenCalledWith(
-        jasmine.objectContaining({ kind: NotificationKind.NEXT, value: 0 }),
-      );
+      expect(stubbedWorkers[0].postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: 0 }));
 
       sub.unsubscribe();
     });
@@ -92,17 +92,17 @@ describe('fromWorkerPool', () => {
       for (let i = 0; i < navigator.hardwareConcurrency - 1; i++) {
         const stubWorker = stubbedWorkers[i];
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, i),
+            data: new Notification('N', i),
           }),
         );
 
         expect(subscriptionSpy).toHaveBeenCalledWith(i);
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.COMPLETE),
+            data: new Notification('C'),
           }),
         );
 
@@ -133,15 +133,15 @@ describe('fromWorkerPool', () => {
       for (const i of input) {
         const stubWorker = stubbedWorkers[i % workerCount];
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, i),
+            data: new Notification('N', i),
           }),
         );
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.COMPLETE),
+            data: new Notification('C'),
           }),
         );
       }
@@ -185,15 +185,15 @@ describe('fromWorkerPool', () => {
       for (const i of generator()) {
         const stubWorker = stubbedWorkers[i % workerCount];
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.NEXT, i),
+            data: new Notification('N', i),
           }),
         );
 
-        stubWorker.onmessage(
+        stubWorker.onmessage!(
           new MessageEvent('message', {
-            data: new Notification(NotificationKind.COMPLETE),
+            data: new Notification('C'),
           }),
         );
       }
@@ -256,15 +256,15 @@ describe('fromWorkerPool', () => {
         setTimeout(() => {
           const stubWorker = stubbedWorkers[i % workerCount];
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.NEXT, input[i]),
+              data: new Notification('N', input[i]),
             }),
           );
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.COMPLETE),
+              data: new Notification('C'),
             }),
           );
         }, 10 - i); // output each result in successively less time for each value
@@ -323,15 +323,15 @@ describe('fromWorkerPool', () => {
         setTimeout(() => {
           const stubWorker = stubbedWorkers[i % workerCount];
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.NEXT, input[i]),
+              data: new Notification('N', input[i]),
             }),
           );
 
-          stubWorker.onmessage(
+          stubWorker.onmessage!(
             new MessageEvent('message', {
-              data: new Notification(NotificationKind.COMPLETE),
+              data: new Notification('C'),
             }),
           );
         }, 10 - i); // output each result in successively less time for each value

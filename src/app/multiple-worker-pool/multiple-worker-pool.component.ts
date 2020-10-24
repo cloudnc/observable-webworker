@@ -3,8 +3,10 @@ import {
   animationFrameScheduler,
   asyncScheduler,
   combineLatest,
+  concat,
   interval,
   Observable,
+  of,
   ReplaySubject,
   Subject,
 } from 'rxjs';
@@ -34,7 +36,7 @@ import TimelineOptions = google.visualization.TimelineOptions;
   styleUrls: ['./multiple-worker-pool.component.scss'],
 })
 export class MultipleWorkerPoolComponent {
-  @ViewChild('timeline', { static: false, read: ElementRef }) private timelineComponent: ElementRef;
+  @ViewChild('timeline', { read: ElementRef }) private timelineComponent: ElementRef;
 
   public multiFilesToHash: Subject<File[]> = new ReplaySubject(1);
   public workResult$ = this.multiFilesToHash.pipe(
@@ -42,10 +44,8 @@ export class MultipleWorkerPoolComponent {
     switchMap(files => this.hashMultipleFiles(files)),
   );
 
-  private filenames: string[];
   public filenames$ = this.multiFilesToHash.pipe(
     map(files => files.map(f => f.name)),
-    tap(names => (this.filenames = names)),
     shareReplay(1),
   );
 
@@ -62,18 +62,17 @@ export class MultipleWorkerPoolComponent {
           ),
         ),
         map(message => message.file),
-        scan<string>((files, file) => [...files, file], []),
+        scan<string, string[]>((files, file) => [...files, file], []),
         startWith([]),
       ),
     ),
   );
 
-  public complete$: Observable<boolean> = combineLatest(this.filenames$, this.completedFiles$).pipe(
+  public complete$: Observable<boolean> = combineLatest([this.filenames$, this.completedFiles$]).pipe(
     map(([files, completedFiles]) => files.length === completedFiles.length),
   );
 
-  public status$: Observable<string> = this.complete$.pipe(
-    startWith(null),
+  public status$: Observable<string> = concat(of(null), this.complete$).pipe(
     map(isComplete => {
       switch (isComplete) {
         case null:
@@ -87,7 +86,7 @@ export class MultipleWorkerPoolComponent {
   );
 
   public eventListPool$: Observable<HashWorkerMessage[]> = this.eventsPool$.pipe(
-    scan<HashWorkerMessage>((list, event) => {
+    scan<HashWorkerMessage, HashWorkerMessage[]>((list, event) => {
       list.push(event);
       return list;
     }, []),
@@ -109,7 +108,7 @@ export class MultipleWorkerPoolComponent {
     }),
   );
 
-  public chartObserver$ = combineLatest(this.filenames$, this.googleChartService.getVisualisation('timeline')).pipe(
+  public chartObserver$ = combineLatest([this.filenames$, this.googleChartService.getVisualisation('timeline')]).pipe(
     switchMap(([filenames, visualization]) => {
       const container = this.timelineComponent.nativeElement;
       const chart = new visualization.Timeline(container);
@@ -152,7 +151,7 @@ export class MultipleWorkerPoolComponent {
               break;
             case FileHashEvent.PICKED_UP:
               durationName = 'Transferring file to worker';
-              if (this.filenames.indexOf(event.file) < navigator.hardwareConcurrency - 1) {
+              if (event.file && filenames.indexOf(event.file) < navigator.hardwareConcurrency - 1) {
                 durationName = 'Starting worker, ' + durationName;
               }
               break;

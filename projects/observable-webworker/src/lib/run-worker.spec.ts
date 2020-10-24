@@ -64,21 +64,21 @@ describe('runWorker', () => {
     const sub = runWorker(TestWorkerUnit);
 
     const event: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, 11),
+      data: new Notification('N', 11),
     });
 
     self.dispatchEvent(event);
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.NEXT,
+        kind: 'N',
         value: 22,
       }),
     );
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.COMPLETE,
+        kind: 'C',
       }),
     );
 
@@ -114,15 +114,15 @@ describe('runWorker', () => {
     expected[1] = 6;
     expected[2] = 9;
 
-    const event: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, payload),
+    const event: WorkerMessageNotification<Int8Array> = new MessageEvent('message', {
+      data: new Notification('N', payload),
     });
 
     self.dispatchEvent(event);
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.NEXT,
+        kind: 'N',
         value: payload,
       }),
       [expected.buffer],
@@ -130,7 +130,7 @@ describe('runWorker', () => {
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.COMPLETE,
+        kind: 'C',
       }),
     );
 
@@ -150,21 +150,21 @@ describe('runWorker', () => {
     const sub = runWorker(TestWorker);
 
     const event: WorkerMessageNotification<number> = new MessageEvent('message', {
-      data: new Notification(NotificationKind.NEXT, 0),
+      data: new Notification('N', 0),
     });
 
     self.dispatchEvent(event);
 
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.NEXT,
+        kind: 'N',
         value: 1,
       }),
     );
 
     expect(postMessageSpy).not.toHaveBeenCalledWith(
       jasmine.objectContaining({
-        kind: NotificationKind.COMPLETE,
+        kind: 'C',
       }),
     );
 

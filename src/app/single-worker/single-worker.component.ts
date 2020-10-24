@@ -13,7 +13,7 @@ import { HashWorkerMessage } from '../hash-worker.types';
 export class SingleWorkerComponent {
   public events$: Subject<string> = new Subject();
   public eventList$: Observable<string[]> = this.events$.pipe(
-    scan<string>((list, event) => {
+    scan<string, string[]>((list, event) => {
       list.push(event);
       return list;
     }, []),
