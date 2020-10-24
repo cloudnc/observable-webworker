@@ -2,10 +2,10 @@
 exports[`stricter compilation`] = {
   timestamp: 1603555076420,
   value: `{
-    "projects/observable-webworker/src/lib/from-worker-pool.spec.ts:1379988114": [
-      [286, 33, 33, "Argument of type \'(observer: Observer<number>) => () => void\' is not assignable to parameter of type \'(this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic\'.\\n  Types of parameters \'observer\' and \'subscriber\' are incompatible.\\n    Type \'Subscriber<T>\' is not assignable to type \'Observer<number>\'.\\n      Types of property \'next\' are incompatible.\\n        Type \'(value?: T | undefined) => void\' is not assignable to type \'(value: number) => void\'.\\n          Types of parameters \'value\' and \'value\' are incompatible.\\n            Type \'number\' is not assignable to type \'T | undefined\'.", "1166033031"]
+    "projects/observable-webworker/src/lib/from-worker-pool.spec.ts:2815790124": [
+      [288, 33, 33, "Argument of type \'(observer: Observer<number>) => () => void\' is not assignable to parameter of type \'(this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic\'.\\n  Types of parameters \'observer\' and \'subscriber\' are incompatible.\\n    Type \'Subscriber<T>\' is not assignable to type \'Observer<number>\'.\\n      Types of property \'next\' are incompatible.\\n        Type \'(value?: T | undefined) => void\' is not assignable to type \'(value: number) => void\'.\\n          Types of parameters \'value\' and \'value\' are incompatible.\\n            Type \'number\' is not assignable to type \'T | undefined\'.", "1166033031"]
     ],
-    "projects/observable-webworker/src/lib/from-worker.spec.ts:176643974": [
+    "projects/observable-webworker/src/lib/from-worker.spec.ts:2047567224": [
       [92, 4, 20, "Cannot invoke an object which is possibly \'null\'.", "650422727"],
       [171, 4, 20, "Cannot invoke an object which is possibly \'null\'.", "650422727"],
       [177, 4, 20, "Cannot invoke an object which is possibly \'null\'.", "650422727"]
