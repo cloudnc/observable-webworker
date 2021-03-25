@@ -37,15 +37,15 @@ jobs:
         run: yarn lib:build:prod
       - name: Incremental code quality checking
         run: yarn betterer
-      - name: Copy built README into dist
-        run: rm dist/observable-webworker/README.md && cp README.md dist/observable-webworker
-      - name: Copy LICENSE into dist
-        run: cp LICENSE dist/observable-webworker
       - name: Build Demo
         if: contains('refs/heads/master', github.ref)
         run: |
           yarn run demo:build:prod --progress=false --base-href "https://cloudnc.github.io/observable-webworker/"
           yarn lib:build:prod
+      - name: Copy built README into dist
+        run: rm dist/observable-webworker/README.md && cp README.md dist/observable-webworker
+      - name: Copy LICENSE into dist
+        run: cp LICENSE dist/observable-webworker
       - name: Release
         if: contains('refs/heads/master refs/heads/next', github.ref)
         env:
