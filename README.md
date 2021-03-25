@@ -245,4 +245,5 @@ Note here that the worker class `implements DoWorkUnit<File, string>`. This is d
 `DoWork` which had the slightly more complex signature of inputting an observable and outputting one.
 
 If using the `fromWorkerPool` strategy, you must only implement `DoWorkUnit` as it relies on the completion of the 
-returned observable to indicate that the unit of work is finished processing.
+returned observable to indicate that the unit of work is finished processing, and the next unit of work can be 
+transferred to the worker.

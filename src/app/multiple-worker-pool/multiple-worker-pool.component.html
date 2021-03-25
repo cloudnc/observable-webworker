@@ -3,10 +3,14 @@
 
 <p>Select multiple files of varying sizes to compute MD5 sum of, in pool of webworkers:</p>
 
+<input type="file" multiple (change)="calculateMD5Multiple($event)" />
 <section>
   <small>(No files are uploaded; they're kept entirely within your browser)</small>
+  <p>
+    ℹ️ large files (>10MB) gives the best results otherwise the timing starts to be dominated by the UI updates rather
+    than the computation of hashes
+  </p>
 </section>
-<input type="file" multiple (change)="calculateMD5Multiple($event)" />
 
 <h3 [attr.data]="chartObserver$ | async">Timeline</h3>
 <div #timeline></div>

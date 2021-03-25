@@ -14,15 +14,6 @@
 
 <app-single-worker></app-single-worker>
 
-<p>
-  Note if you select a particularly large file (>1GB) you will have time to select another file and see that the
-  original worker is terminated and a new worker is created for the new file. This is because the main thread uses a
-  <code>switchMap</code>
-  , but if this behaviour was not desired, simply swapping in a
-  <code>mergeMap</code>
-  would allow both files to complete hashing.
-</p>
-
 <hr />
 
 <app-multiple-worker-pool></app-multiple-worker-pool>
