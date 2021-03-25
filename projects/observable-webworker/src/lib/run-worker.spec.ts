@@ -1,5 +1,5 @@
+import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject, Notification, Observable, of } from 'rxjs';
-import { NotificationKind } from 'rxjs/internal/Notification';
 import {
   DoTransferableWork,
   DoTransferableWorkUnit,
@@ -17,13 +17,13 @@ describe('workerIsTransferableType', () => {
       }
 
       public work(input$: Observable<number>): Observable<number> {
-        return undefined;
+        return of(1);
       }
     }
 
     class TestWorkerNotTransferable implements DoWork<number, number> {
       public work(input$: Observable<number>): Observable<number> {
-        return undefined;
+        return of(1);
       }
     }
 
@@ -36,13 +36,13 @@ describe('workerIsUnitType', () => {
   it('should identify a worker as being able to do work units', () => {
     class TestWorkerUnit implements DoWorkUnit<number, number> {
       public workUnit(input: number): Observable<number> {
-        return undefined;
+        return of(1);
       }
     }
 
     class TestWorkerNotUnit implements DoWork<number, number> {
       public work(input$: Observable<number>): Observable<number> {
-        return undefined;
+        return of(1);
       }
     }
 
@@ -170,4 +170,39 @@ describe('runWorker', () => {
 
     sub.unsubscribe();
   });
+
+  it('should permit promises to be returned from doWork to allow for simpler async/await patterns', fakeAsync(() => {
+    const postMessageSpy = spyOn(window, 'postMessage');
+
+    class TestWorkerUnit implements DoWorkUnit<number, number> {
+      public async workUnit(input: number): Promise<number> {
+        return input * 2;
+      }
+    }
+
+    const sub = runWorker(TestWorkerUnit);
+
+    const event: WorkerMessageNotification<number> = new MessageEvent('message', {
+      data: new Notification('N', 1),
+    });
+
+    self.dispatchEvent(event);
+
+    tick();
+
+    expect(postMessageSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        kind: 'N',
+        value: 2,
+      }),
+    );
+
+    expect(postMessageSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        kind: 'C',
+      }),
+    );
+
+    sub.unsubscribe();
+  }));
 });

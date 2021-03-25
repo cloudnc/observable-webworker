@@ -1,4 +1,4 @@
-import { fromEvent, Notification, Observable, Subscription } from 'rxjs';
+import { from, fromEvent, Notification, Observable, Subscription } from 'rxjs';
 import { concatMap, dematerialize, filter, map, materialize } from 'rxjs/operators';
 import { DoTransferableWork, DoWork, DoWorkUnit, WorkerMessageNotification } from './observable-worker.types';
 
@@ -33,7 +33,7 @@ export function getWorkerResult<I, O>(
   );
 
   return workerIsUnitType(worker)
-    ? input$.pipe(concatMap(input => worker.workUnit(input).pipe(materialize())))
+    ? input$.pipe(concatMap(input => from(worker.workUnit(input)).pipe(materialize())))
     : worker.work(input$).pipe(materialize());
 }
 

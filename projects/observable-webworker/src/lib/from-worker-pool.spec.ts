@@ -1,6 +1,6 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { Observable, Observer, Subject, Subscription } from 'rxjs';
-import { Notification, NotificationKind } from 'rxjs/internal/Notification';
+import { Notification } from 'rxjs/internal/Notification';
 import { reduce } from 'rxjs/operators';
 import { fromWorkerPool } from './from-worker-pool';
 

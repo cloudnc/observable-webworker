@@ -12,7 +12,7 @@ export interface WorkerMessageNotification<T> extends MessageEvent {
 }
 
 export interface DoWorkUnit<I, O> {
-  workUnit(input: I): Observable<O>;
+  workUnit(input: I): Observable<O> | PromiseLike<O>;
   selectTransferables?(output: O): Transferable[];
 }
 

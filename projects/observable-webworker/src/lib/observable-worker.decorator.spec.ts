@@ -1,5 +1,4 @@
 import { Notification, Observable } from 'rxjs';
-import { NotificationKind } from 'rxjs/internal/Notification';
 import { take } from 'rxjs/operators';
 import { ObservableWorker } from './observable-worker.decorator';
 import { DoWork, WorkerMessageNotification } from './observable-worker.types';

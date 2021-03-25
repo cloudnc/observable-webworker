@@ -1,8 +1,8 @@
 // BETTERER RESULTS V1.
 exports[`stricter compilation`] = {
-  timestamp: 1603555076420,
+  timestamp: 1616658221627,
   value: `{
-    "projects/observable-webworker/src/lib/from-worker-pool.spec.ts:2815790124": [
+    "projects/observable-webworker/src/lib/from-worker-pool.spec.ts:634732869": [
       [288, 33, 33, "Argument of type \'(observer: Observer<number>) => () => void\' is not assignable to parameter of type \'(this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic\'.\\n  Types of parameters \'observer\' and \'subscriber\' are incompatible.\\n    Type \'Subscriber<T>\' is not assignable to type \'Observer<number>\'.\\n      Types of property \'next\' are incompatible.\\n        Type \'(value?: T | undefined) => void\' is not assignable to type \'(value: number) => void\'.\\n          Types of parameters \'value\' and \'value\' are incompatible.\\n            Type \'number\' is not assignable to type \'T | undefined\'.", "1166033031"]
     ],
     "projects/observable-webworker/src/lib/from-worker.spec.ts:2047567224": [
@@ -13,13 +13,7 @@ exports[`stricter compilation`] = {
     "projects/observable-webworker/src/lib/from-worker.ts:4009652202": [
       [28, 56, 11, "Argument of type \'Input | undefined\' is not assignable to parameter of type \'Input\'.\\n  \'Input\' could be instantiated with an arbitrary type which could be unrelated to \'Input | undefined\'.\\n    Type \'undefined\' is not assignable to type \'Input\'.\\n      \'Input\' could be instantiated with an arbitrary type which could be unrelated to \'undefined\'.", "1574273654"]
     ],
-    "projects/observable-webworker/src/lib/run-worker.spec.ts:1321560577": [
-      [19, 8, 17, "Type \'undefined\' is not assignable to type \'Observable<number>\'.", "4204377774"],
-      [25, 8, 17, "Type \'undefined\' is not assignable to type \'Observable<number>\'.", "4204377774"],
-      [38, 8, 17, "Type \'undefined\' is not assignable to type \'Observable<number>\'.", "4204377774"],
-      [44, 8, 17, "Type \'undefined\' is not assignable to type \'Observable<number>\'.", "4204377774"]
-    ],
-    "projects/observable-webworker/src/lib/run-worker.ts:1913596105": [
+    "projects/observable-webworker/src/lib/run-worker.ts:4122498212": [
       [4, 65, 7, "Rest parameter \'args\' implicitly has an \'any[]\' type.", "3622679692"],
       [51, 38, 26, "Cannot invoke an object which is possibly \'undefined\'.", "4028913799"],
       [51, 65, 18, "Argument of type \'O | undefined\' is not assignable to parameter of type \'O\'.\\n  \'O\' could be instantiated with an arbitrary type which could be unrelated to \'O | undefined\'.\\n    Type \'undefined\' is not assignable to type \'O\'.\\n      \'O\' could be instantiated with an arbitrary type which could be unrelated to \'undefined\'.", "3307950093"]
@@ -36,11 +30,9 @@ exports[`stricter compilation`] = {
       [13, 9, 5, "Property \'color\' has no initializer and is not definitely assigned in the constructor.", "176948952"],
       [18, 44, 17, "Argument of type \'string | undefined\' is not assignable to parameter of type \'string\'.\\n  Type \'undefined\' is not assignable to type \'string\'.", "463397358"]
     ],
-    "src/app/multiple-worker-pool/multiple-worker-pool.component.ts:345284253": [
-      [38, 55, 17, "Property \'timelineComponent\' has no initializer and is not definitely assigned in the constructor.", "964610961"],
-      [63, 8, 28, "Argument of type \'OperatorFunction<HashWorkerMessage, string | undefined>\' is not assignable to parameter of type \'OperatorFunction<HashWorkerMessage, string>\'.\\n  Type \'string | undefined\' is not assignable to type \'string\'.\\n    Type \'undefined\' is not assignable to type \'string\'.", "3851287027"],
-      [87, 9, 14, "Type \'Observable<{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]>\' is not assignable to type \'Observable<HashWorkerMessage[]>\'.\\n  Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]\' is not assignable to type \'HashWorkerMessage[]\'.\\n    Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }\' is not assignable to type \'HashWorkerMessage\'.\\n      Types of property \'millisSinceLast\' are incompatible.\\n        Type \'number | null\' is not assignable to type \'number | undefined\'.\\n          Type \'null\' is not assignable to type \'number | undefined\'.", "463576723"],
-      [240, 30, 6, "Parameter \'$event\' implicitly has an \'any\' type.", "3058907597"]
+    "src/app/multiple-worker-pool/multiple-worker-pool.component.ts:3101768987": [
+      [40, 55, 17, "Property \'timelineComponent\' has no initializer and is not definitely assigned in the constructor.", "964610961"],
+      [90, 9, 14, "Type \'Observable<{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]>\' is not assignable to type \'Observable<HashWorkerMessage[]>\'.\\n  Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]\' is not assignable to type \'HashWorkerMessage[]\'.\\n    Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }\' is not assignable to type \'HashWorkerMessage\'.\\n      Types of property \'millisSinceLast\' are incompatible.\\n        Type \'number | null\' is not assignable to type \'number | undefined\'.\\n          Type \'null\' is not assignable to type \'number | undefined\'.", "463576723"]
     ],
     "src/app/single-worker/single-worker.component.ts:228104130": [
       [25, 22, 6, "Parameter \'$event\' implicitly has an \'any\' type.", "3058907597"]
