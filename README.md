@@ -186,7 +186,7 @@ order with input order
 ### Example
 
 In this simple example, we have a function that receives an array of files and returns an observable of the MD5 sum
-hashes of those files. For simplicity we're passing the primitives back and forth, however in reality you are likely to 
+hashes of those files. For simplicity, we're passing the primitives back and forth, however in reality you are likely to 
 want to construct your own interface to define the messages being passed to and from the worker.
 
 #### Main Thread
@@ -247,3 +247,18 @@ Note here that the worker class `implements DoWorkUnit<File, string>`. This is d
 If using the `fromWorkerPool` strategy, you must only implement `DoWorkUnit` as it relies on the completion of the 
 returned observable to indicate that the unit of work is finished processing, and the next unit of work can be 
 transferred to the worker.
+
+Commonly, a worker that implements `DoWorkUnit` only needs to return a single value, so you may instead return a `Promise`
+from the `workUnit` method.
+
+```ts
+// src/app/doc/async-work.worker.ts#L7-L14
+
+@ObservableWorker()
+export class FactorizationWorker implements DoWorkUnit<number, number[]> {
+  public async workUnit(input: number): Promise<number[]> {
+    return factorize(input);
+  }
+}
+
+```

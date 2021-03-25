@@ -64,6 +64,7 @@ export class MultipleWorkerPoolComponent {
           ),
         ),
         map(message => message.file),
+        filter((filename): filename is string => !!filename),
         scan<string, string[]>((files, file) => [...files, file], []),
         startWith([]),
       ),
@@ -246,8 +247,8 @@ export class MultipleWorkerPoolComponent {
     );
   }
 
-  public calculateMD5Multiple($event): void {
-    const files: File[] = Array.from($event.target.files);
+  public calculateMD5Multiple($event: Event): void {
+    const files: File[] = Array.from(($event.target as HTMLInputElement).files || []);
     this.multiFilesToHash.next(files);
     for (const file of files) {
       this.eventsPool$.next(this.logMessage(FileHashEvent.SELECTED, 'file selected', file.name));
