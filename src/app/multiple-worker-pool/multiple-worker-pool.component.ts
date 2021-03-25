@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import {
   animationFrameScheduler,
   asyncScheduler,
@@ -11,6 +11,7 @@ import {
   Subject,
 } from 'rxjs';
 import {
+  delay,
   filter,
   groupBy,
   map,
@@ -34,6 +35,7 @@ import TimelineOptions = google.visualization.TimelineOptions;
   selector: 'app-multiple-worker-pool',
   templateUrl: './multiple-worker-pool.component.html',
   styleUrls: ['./multiple-worker-pool.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultipleWorkerPoolComponent {
   @ViewChild('timeline', { read: ElementRef }) private timelineComponent: ElementRef;
@@ -135,13 +137,10 @@ export class MultipleWorkerPoolComponent {
             return;
           }
 
-          if (lastRow.has(event.file)) {
-            dataTable.setCell(lastRow.get(event.file), 3, event.timestamp);
-          }
+          const timestamp = event.timestamp;
 
-          if (event.fileEventType === FileHashEvent.HASH_RECEIVED) {
-            lastRow.delete(event.file);
-            return;
+          if (lastRow.has(event.file)) {
+            dataTable.setCell(lastRow.get(event.file), 3, timestamp);
           }
 
           let durationName: string;
@@ -164,10 +163,18 @@ export class MultipleWorkerPoolComponent {
             case FileHashEvent.HASH_COMPUTED:
               durationName = 'Returning hash result to main thread';
               break;
+            case FileHashEvent.HASH_RECEIVED:
+              durationName = 'Main thread received hash';
+              break;
           }
 
-          const row = dataTable.addRow([event.file, durationName, event.timestamp, event.timestamp]);
-          lastRow.set(event.file, row);
+          const row = dataTable.addRow([event.file, durationName, timestamp, timestamp]);
+
+          if (event.fileEventType === FileHashEvent.HASH_RECEIVED) {
+            lastRow.delete(event.file);
+          } else {
+            lastRow.set(event.file, row);
+          }
 
           chartOptions.height = filenames.length * 41 + 50;
 
@@ -200,6 +207,7 @@ export class MultipleWorkerPoolComponent {
           this.complete$.pipe(
             filter(c => c),
             take(1),
+            delay(0),
           ),
         ),
       );
