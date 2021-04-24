@@ -2,6 +2,7 @@
 
 Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) with [RxJS](https://rxjs-dev.firebaseapp.com/guide/overview) observables
 
+[![Strict TypeScript Checked](https://badgen.net/badge/TS/Strict "Strict TypeScript Checked")](https://www.typescriptlang.org)
 [![npm version](https://badge.fury.io/js/observable-webworker.svg)](https://www.npmjs.com/package/observable-webworker)
 [![Build Status](https://github.com/cloudnc/observable-webworker/workflows/CI/badge.svg)](https://github.com/cloudnc/observable-webworker/actions)
 [![codecov](https://codecov.io/gh/cloudnc/observable-webworker/branch/master/graph/badge.svg)](https://codecov.io/gh/cloudnc/observable-webworker)
@@ -18,13 +19,13 @@ Simple API for using [web workers](https://developer.mozilla.org/en-US/docs/Web/
 - Error handling across the thread boundaries is propagated
   - Under the hood `materialize` and `dematerialize` is used as a robust transport of streaming errors
 - Automatic handling of worker termination on main thread unsubscription of observable
-- Framework agnostic - while the demo uses Angular, the only dependencies are rxjs so React or Vue or plain old js is
+- Framework agnostic - while the demo uses Angular, the only dependency is rxjs, so React, Vue or plain old JS is
   completely compatible
 - Fully compatible with [Webpack worker-plugin](https://github.com/GoogleChromeLabs/worker-plugin)
   - Therefore compatible with [Angular webworker bundling](https://angular.io/guide/web-worker) which uses this
 - Class interface based worker creation (should be familiar API for Angular developers)
 - Unopinionated on stream switching behavior, feel free to use `mergeMap`, `switchMap` or `exhaustMap` in your worker if
-  the input stream outputs multiple items that generate their own stream of results
+  the input stream contains multiple items that generate their own stream of results
 - Built in interfaces for handling [`Transferable`](https://developer.mozilla.org/en-US/docs/Web/API/Transferable) parts
   of message payloads so large binaries can transferred efficiently without copying - See [Transferable](#transferable)
   section for usage
@@ -269,3 +270,8 @@ export class FactorizationWorker implements DoWorkUnit<number, number[]> {
 runWorker(FactorizationWorker);
 
 ```
+
+---
+
+Are you using observable-webworker? [Tell us about it!](https://github.com/cloudnc/observable-webworker/discussions/69) We'd love to hear about the weird and wonderful ways developers are working with streaming workers.
+
