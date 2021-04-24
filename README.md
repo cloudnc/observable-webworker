@@ -59,6 +59,10 @@ yarn add observable-webworker
 
 #### Main Thread
 
+💡 Take note! The webworker construction syntax differs for different version of webpack:
+
+#### Webpack < 5
+
 ```ts
 // src/readme/hello.ts
 
@@ -72,17 +76,33 @@ fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }
 });
 
 ```
+#### Webpack 5
+
+```ts
+// src/readme/hello-webpack-5.ts#L2-L12
+
+import { fromWorker } from 'observable-webworker';
+import { of } from 'rxjs';
+
+const input$ = of('Hello from main thread');
+
+fromWorker<string, string>(
+  () => new Worker(new URL('./app.worker', import.meta.url), { type: 'module' }),
+  input$,
+).subscribe(message => {
+  console.log(message); // Outputs 'Hello from webworker'
+});
+```
 
 #### Worker Thread
 
 ```ts
 // src/readme/hello.worker.ts
 
-import { DoWork, ObservableWorker } from 'observable-webworker';
+import { DoWork, runWorker } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-@ObservableWorker()
 export class HelloWorker implements DoWork<string, string> {
   public work(input$: Observable<string>): Observable<string> {
     return input$.pipe(
@@ -94,35 +114,20 @@ export class HelloWorker implements DoWork<string, string> {
   }
 }
 
-```
-
-##### Important Note
-You **must** export your worker class (`export class ...`) from the file if you're using a minifier. If you don't, your 
-class will be removed from the bundle, causing your worker to do nothing! 
- 
-You'll probably need to export the class anyway as you are unit testing it right?!
-
-##### Don't like decorators? Don't use 'em!
-
-If decorators is not something you use regularly and prefer direct functions, simply
-use the `runWorker` function instead.
-
-```ts
-// src/readme/hello-no-decorator.worker.ts#L5-L16
-
-class HelloWorker implements DoWork<string, string> {
-  public work(input$: Observable<string>): Observable<string> {
-    return input$.pipe(
-      map(message => {
-        console.log(message); // outputs 'Hello from main thread'
-        return `Hello from webworker`;
-      }),
-    );
-  }
-}
-
 runWorker(HelloWorker);
+
 ```
+
+#### Decorator deprecation notice
+Future versions of webpack (Webpack 5) minify webworkers overly aggressively, causing
+the `@ObservableWorker()` decorator pattern to no longer function. This decorator
+has now been deprecated, and will be removed in the next major version of this library.
+
+To migrate from decorators, simply remove the decorator, and invoke the `runWorker`
+with your class passed as argument (see example above).
+
+Make sure you **don't forget to remove the decorator** when you add the `runWorker(...)`
+function, otherwise the worker will be run twice, each acting on any message sent. 
 
 ## Transferable
 
@@ -209,11 +214,10 @@ export function computeHashes(files: File[]): Observable<string> {
 // src/readme/worker-pool-hash.worker.ts
 
 import * as md5 from 'js-md5';
-import { DoWorkUnit, ObservableWorker } from 'observable-webworker';
+import { DoWorkUnit, runWorker } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-@ObservableWorker()
 export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
   public workUnit(input: File): Observable<string> {
     return this.readFileAsArrayBuffer(input).pipe(map(arrayBuffer => md5(arrayBuffer)));
@@ -239,6 +243,8 @@ export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
   }
 }
 
+runWorker(WorkerPoolHashWorker);
+
 ```
 
 Note here that the worker class `implements DoWorkUnit<File, string>`. This is different to before where we implemented
@@ -254,11 +260,12 @@ from the `workUnit` method.
 ```ts
 // src/app/doc/async-work.worker.ts#L7-L14
 
-@ObservableWorker()
 export class FactorizationWorker implements DoWorkUnit<number, number[]> {
   public async workUnit(input: number): Promise<number[]> {
     return factorize(input);
   }
 }
+
+runWorker(FactorizationWorker);
 
 ```

@@ -1,6 +1,6 @@
 // BETTERER RESULTS V1.
 exports[`stricter compilation`] = {
-  timestamp: 1616658221627,
+  timestamp: 1619239347633,
   value: `{
     "projects/observable-webworker/src/lib/from-worker-pool.spec.ts:634732869": [
       [288, 33, 33, "Argument of type \'(observer: Observer<number>) => () => void\' is not assignable to parameter of type \'(this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic\'.\\n  Types of parameters \'observer\' and \'subscriber\' are incompatible.\\n    Type \'Subscriber<T>\' is not assignable to type \'Observer<number>\'.\\n      Types of property \'next\' are incompatible.\\n        Type \'(value?: T | undefined) => void\' is not assignable to type \'(value: number) => void\'.\\n          Types of parameters \'value\' and \'value\' are incompatible.\\n            Type \'number\' is not assignable to type \'T | undefined\'.", "1166033031"]
@@ -18,9 +18,6 @@ exports[`stricter compilation`] = {
       [51, 38, 26, "Cannot invoke an object which is possibly \'undefined\'.", "4028913799"],
       [51, 65, 18, "Argument of type \'O | undefined\' is not assignable to parameter of type \'O\'.\\n  \'O\' could be instantiated with an arbitrary type which could be unrelated to \'O | undefined\'.\\n    Type \'undefined\' is not assignable to type \'O\'.\\n      \'O\' could be instantiated with an arbitrary type which could be unrelated to \'undefined\'.", "3307950093"]
     ],
-    "src/app/file-hash.worker.ts:1230899360": [
-      [0, 21, 8, "Could not find a declaration file for module \'js-md5\'. \'./node_modules/js-md5/src/md5.js\' implicitly has an \'any\' type.\\n  Try \`npm install @types/js-md5\` if it exists or add a new declaration (.d.ts) file containing \`declare module \'js-md5\';\`", "3516231053"]
-    ],
     "src/app/google-charts.service.ts:1308226900": [
       [3, 29, 15, "Could not find a declaration file for module \'google-charts\'. \'./node_modules/google-charts/dist/googleCharts.js\' implicitly has an \'any\' type.\\n  Try \`npm install @types/google-charts\` if it exists or add a new declaration (.d.ts) file containing \`declare module \'google-charts\';\`", "2535818334"]
     ],
@@ -33,12 +30,6 @@ exports[`stricter compilation`] = {
     "src/app/multiple-worker-pool/multiple-worker-pool.component.ts:3101768987": [
       [40, 55, 17, "Property \'timelineComponent\' has no initializer and is not definitely assigned in the constructor.", "964610961"],
       [90, 9, 14, "Type \'Observable<{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]>\' is not assignable to type \'Observable<HashWorkerMessage[]>\'.\\n  Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]\' is not assignable to type \'HashWorkerMessage[]\'.\\n    Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }\' is not assignable to type \'HashWorkerMessage\'.\\n      Types of property \'millisSinceLast\' are incompatible.\\n        Type \'number | null\' is not assignable to type \'number | undefined\'.\\n          Type \'null\' is not assignable to type \'number | undefined\'.", "463576723"]
-    ],
-    "src/app/single-worker/single-worker.component.ts:228104130": [
-      [25, 22, 6, "Parameter \'$event\' implicitly has an \'any\' type.", "3058907597"]
-    ],
-    "src/readme/worker-pool-hash.worker.ts:2220989309": [
-      [0, 21, 8, "Could not find a declaration file for module \'js-md5\'. \'./node_modules/js-md5/src/md5.js\' implicitly has an \'any\' type.\\n  Try \`npm install @types/js-md5\` if it exists or add a new declaration (.d.ts) file containing \`declare module \'js-md5\';\`", "3516231053"]
     ]
   }`
 };

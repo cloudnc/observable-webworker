@@ -1,11 +1,10 @@
 import * as md5 from 'js-md5';
-import { ObservableWorker } from 'observable-webworker';
+import { runWorker } from 'observable-webworker';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
 import { DoWorkUnit } from '../../projects/observable-webworker/src/lib/observable-worker.types';
 import { FileHashEvent, HashWorkerMessage, Thread } from './hash-worker.types';
 
-@ObservableWorker()
 export class FileHashWorker implements DoWorkUnit<File, HashWorkerMessage> {
   public workUnit(input: File): Observable<HashWorkerMessage> {
     const output$: Subject<HashWorkerMessage> = new ReplaySubject(Infinity);
@@ -54,3 +53,5 @@ export class FileHashWorker implements DoWorkUnit<File, HashWorkerMessage> {
     });
   }
 }
+
+runWorker(FileHashWorker);
