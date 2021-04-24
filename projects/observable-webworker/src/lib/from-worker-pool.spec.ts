@@ -1,5 +1,5 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { Observable, Observer, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { Notification } from 'rxjs/internal/Notification';
 import { reduce } from 'rxjs/operators';
 import { fromWorkerPool } from './from-worker-pool';
@@ -285,14 +285,14 @@ describe('fromWorkerPool', () => {
 
       const operatorSpy = jasmine.createSpy('subscriptionSpy');
 
-      function customOperator<T extends number>(outerObservable$: Observable<Observable<T>>): Observable<T> {
-        return new Observable<T>((observer: Observer<number>) => {
+      function customOperator(outerObservable$: Observable<Observable<number>>): Observable<number> {
+        return new Observable<number>((subscriber) => {
           const innerSubs: Subscription[] = [];
 
           const outerSub = outerObservable$.subscribe(innerObservable$ => {
             innerSubs.push(
               innerObservable$.subscribe(value => {
-                observer.next(value * 2);
+                subscriber.next(value * 2);
                 operatorSpy();
               }),
             );

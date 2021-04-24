@@ -38,7 +38,7 @@ import TimelineOptions = google.visualization.TimelineOptions;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultipleWorkerPoolComponent {
-  @ViewChild('timeline', { read: ElementRef }) private timelineComponent: ElementRef;
+  @ViewChild('timeline', { read: ElementRef }) private timelineComponent!: ElementRef;
 
   public multiFilesToHash: Subject<File[]> = new ReplaySubject(1);
   public workResult$ = this.multiFilesToHash.pipe(
