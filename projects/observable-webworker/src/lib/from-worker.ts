@@ -26,7 +26,7 @@ export function fromWorker<Input, Output>(
           materialize(),
           tap(input => {
             if (selectTransferables && input.hasValue) {
-              const transferables = selectTransferables(input.value);
+              const transferables = selectTransferables(input.value as Input);
               worker.postMessage(input, transferables);
             } else {
               worker.postMessage(input);

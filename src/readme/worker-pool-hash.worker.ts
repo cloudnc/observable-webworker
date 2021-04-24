@@ -1,9 +1,8 @@
 import * as md5 from 'js-md5';
-import { DoWorkUnit, ObservableWorker } from 'observable-webworker';
+import { DoWorkUnit, runWorker } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-@ObservableWorker()
 export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
   public workUnit(input: File): Observable<string> {
     return this.readFileAsArrayBuffer(input).pipe(map(arrayBuffer => md5(arrayBuffer)));
@@ -28,3 +27,5 @@ export class WorkerPoolHashWorker implements DoWorkUnit<File, string> {
     });
   }
 }
+
+runWorker(WorkerPoolHashWorker);

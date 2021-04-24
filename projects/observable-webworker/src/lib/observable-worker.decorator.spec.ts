@@ -3,7 +3,7 @@ import { take } from 'rxjs/operators';
 import { ObservableWorker } from './observable-worker.decorator';
 import { DoWork, WorkerMessageNotification } from './observable-worker.types';
 
-describe('@ObservableWorker', () => {
+describe('@ObservableWorker (deprecated, remove in next major version)', () => {
   it('should automatically run the worker', () => {
     const postMessageSpy = spyOn(window, 'postMessage');
     postMessageSpy.calls.reset();

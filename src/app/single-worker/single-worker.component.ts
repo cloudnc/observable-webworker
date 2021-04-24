@@ -23,11 +23,13 @@ export class SingleWorkerComponent {
 
   public hashResult$ = this.filesToHash.pipe(switchMap(file => this.hashFile(file)));
 
-  public calculateMD5($event): void {
+  public calculateMD5($event: Event): void {
     this.events$.next('Main: file selected');
-    const file: File = $event.target.files[0];
+    const file = ($event.target as HTMLInputElement)?.files?.[0];
 
-    this.filesToHash.next(file);
+    if (file) {
+      this.filesToHash.next(file);
+    }
   }
 
   public hashFile(file: Blob): Observable<HashWorkerMessage> {

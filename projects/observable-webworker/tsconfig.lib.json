@@ -6,12 +6,12 @@
     "declaration": true,
     "inlineSources": true,
     "types": [],
-    "lib": ["dom", "es2018"]
+    "lib": ["dom", "es2018"],
+    "strict": true
   },
   "angularCompilerOptions": {
     "skipTemplateCodegen": true,
-    // false due to https://github.com/angular/angular/issues/19698
-    "strictMetadataEmit": false,
+    "strictMetadataEmit": true,
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true,
     "enableResourceInlining": true

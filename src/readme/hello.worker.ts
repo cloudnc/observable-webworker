@@ -1,8 +1,7 @@
-import { DoWork, ObservableWorker } from 'observable-webworker';
+import { DoWork, runWorker } from 'observable-webworker';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-@ObservableWorker()
 export class HelloWorker implements DoWork<string, string> {
   public work(input$: Observable<string>): Observable<string> {
     return input$.pipe(
@@ -13,3 +12,5 @@ export class HelloWorker implements DoWork<string, string> {
     );
   }
 }
+
+runWorker(HelloWorker);

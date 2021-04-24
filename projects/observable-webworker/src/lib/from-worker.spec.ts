@@ -90,7 +90,7 @@ describe('fromWorker', () => {
     const subscriptionErrorSpy = jasmine.createSpy('subscriptionErrorSpy');
     const sub = stubbedWorkerStream.subscribe({ error: subscriptionErrorSpy });
 
-    stubWorker.onmessage(
+    stubWorker.onmessage!(
       new MessageEvent('message', {
         data: new Notification('E', undefined, 'Nope!'),
       }),
@@ -169,13 +169,13 @@ describe('fromWorker', () => {
       testValue.buffer,
     ]);
 
-    stubWorker.onmessage(
+    stubWorker.onmessage!(
       new MessageEvent('message', {
         data: new Notification('N', 1),
       }),
     );
 
-    stubWorker.onmessage(
+    stubWorker.onmessage!(
       new MessageEvent('message', {
         data: new Notification('C'),
       }),
