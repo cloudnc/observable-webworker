@@ -286,7 +286,7 @@ describe('fromWorkerPool', () => {
       const operatorSpy = jasmine.createSpy('subscriptionSpy');
 
       function customOperator(outerObservable$: Observable<Observable<number>>): Observable<number> {
-        return new Observable<number>((subscriber) => {
+        return new Observable<number>(subscriber => {
           const innerSubs: Subscription[] = [];
 
           const outerSub = outerObservable$.subscribe(innerObservable$ => {
