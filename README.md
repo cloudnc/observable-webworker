@@ -72,7 +72,10 @@ import { of } from 'rxjs';
 
 const input$ = of('Hello from main thread');
 
-fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }), input$).subscribe(message => {
+fromWorker<string, string>(
+  () => new Worker(new URL('./hello.worker', import.meta.url), { type: 'module' }),
+  input$,
+).subscribe(message => {
   console.log(message); // Outputs 'Hello from webworker'
 });
 
@@ -154,7 +157,7 @@ call to select which elements of the input stream are transferable.
 // src/readme/transferable.main.ts#L7-L11
 
 return fromWorker<ArrayBuffer, string>(
-  () => new Worker('./transferable.worker', { type: 'module' }),
+  () => new Worker(new URL('./transferable.worker', import.meta.url), { type: 'module' }),
   input$,
   input => [input],
 );
@@ -204,7 +207,10 @@ import { Observable } from 'rxjs';
 import { fromWorkerPool } from 'observable-webworker';
 
 export function computeHashes(files: File[]): Observable<string> {
-  return fromWorkerPool<File, string>(() => new Worker('./worker-pool-hash.worker', { type: 'module' }), files);
+  return fromWorkerPool<File, string>(
+    () => new Worker(new URL('./worker-pool-hash.worker', import.meta.url), { type: 'module' }),
+    files,
+  );
 }
 
 ```

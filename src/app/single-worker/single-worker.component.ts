@@ -36,7 +36,10 @@ export class SingleWorkerComponent {
     const input$: Observable<Blob> = of(file);
 
     return fromWorker<Blob, HashWorkerMessage>(() => {
-      const worker = new Worker('../file-hash.worker', { name: 'md5-worker', type: 'module' });
+      const worker = new Worker(new URL('../file-hash.worker', import.meta.url), {
+        name: 'md5-worker',
+        type: 'module',
+      });
       this.events$.next('Main: worker created');
       return worker;
     }, input$).pipe(

@@ -30,9 +30,10 @@ jobs:
       - name: Test
         run: yarn lib:test:ci
       - name: Coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true # optional (default = false)
+          directory: coverage
       - name: Build
         run: yarn lib:build:prod
       - name: Incremental code quality checking

@@ -1,7 +1,9 @@
 import { Observable, Observer, of, Subject } from 'rxjs';
 import { Notification } from 'rxjs/internal/Notification';
 import { fromWorker } from './from-worker';
-// tslint:disable:no-non-null-assertion
+
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 describe('fromWorker', () => {
   let input$: Subject<number>;
 
@@ -167,7 +169,7 @@ describe('fromWorker', () => {
 
     expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: testValue }), [
       testValue.buffer,
-    ]);
+    ] as any);
 
     stubWorker.onmessage!(
       new MessageEvent('message', {

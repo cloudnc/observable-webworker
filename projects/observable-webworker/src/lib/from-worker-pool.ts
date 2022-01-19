@@ -22,7 +22,7 @@ export function fromWorkerPool<I, O>(
   options?: WorkerPoolOptions<I, O>,
 ): Observable<O> {
   const {
-    // tslint:disable-next-line:no-unnecessary-initializer
+    // eslint-disable-next-line no-undef-init
     selectTransferables = undefined,
     workerCount = navigator.hardwareConcurrency ? navigator.hardwareConcurrency - 1 : null,
     fallbackWorkerCount = 3,

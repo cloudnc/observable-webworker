@@ -125,7 +125,7 @@ describe('runWorker', () => {
         kind: 'N',
         value: payload,
       }),
-      [expected.buffer],
+      [expected.buffer] as any,
     );
 
     expect(postMessageSpy).toHaveBeenCalledWith(
