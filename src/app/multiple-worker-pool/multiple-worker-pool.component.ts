@@ -228,7 +228,10 @@ export class MultipleWorkerPoolComponent {
     const queue: IterableIterator<File> = this.workPool(files);
 
     return fromWorkerPool<Blob, HashWorkerMessage>(index => {
-      const worker = new Worker(new URL('../file-hash.worker', import.meta.url), { name: `hash-worker-${index}`, type: 'module' });
+      const worker = new Worker(new URL('../file-hash.worker', import.meta.url), {
+        name: `hash-worker-${index}`,
+        type: 'module',
+      });
       this.eventsPool$.next(this.logMessage(null, `worker ${index} created`));
       return worker;
     }, queue).pipe(

@@ -169,7 +169,7 @@ describe('fromWorker', () => {
 
     expect(stubWorker.postMessage).toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'N', value: testValue }), [
       testValue.buffer,
-    ]);
+    ] as any);
 
     stubWorker.onmessage!(
       new MessageEvent('message', {
