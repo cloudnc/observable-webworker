@@ -1,3 +1,4 @@
+// @ts-nocheck - @todo remove typechecking prevention once the typescript config supports it
 import { fromWorker } from 'observable-webworker';
 import { of } from 'rxjs';
 

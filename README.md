@@ -62,10 +62,25 @@ yarn add observable-webworker
 
 💡 Take note! The webworker construction syntax differs for different version of webpack:
 
-#### Webpack < 5
+#### Webpack < 5 (deprecated)
 
 ```ts
-// src/readme/hello.ts
+// src/readme/hello-legacy-webpack.ts
+
+import { fromWorker } from 'observable-webworker';
+import { of } from 'rxjs';
+
+const input$ = of('Hello from main thread');
+
+fromWorker<string, string>(() => new Worker('./hello.worker', { type: 'module' }), input$).subscribe(message => {
+  console.log(message); // Outputs 'Hello from webworker'
+});
+
+```
+#### Webpack 5
+
+```ts
+// src/readme/hello.ts#L2-L12
 
 import { fromWorker } from 'observable-webworker';
 import { of } from 'rxjs';
@@ -74,24 +89,6 @@ const input$ = of('Hello from main thread');
 
 fromWorker<string, string>(
   () => new Worker(new URL('./hello.worker', import.meta.url), { type: 'module' }),
-  input$,
-).subscribe(message => {
-  console.log(message); // Outputs 'Hello from webworker'
-});
-
-```
-#### Webpack 5
-
-```ts
-// src/readme/hello-webpack-5.ts#L2-L12
-
-import { fromWorker } from 'observable-webworker';
-import { of } from 'rxjs';
-
-const input$ = of('Hello from main thread');
-
-fromWorker<string, string>(
-  () => new Worker(new URL('./app.worker', import.meta.url), { type: 'module' }),
   input$,
 ).subscribe(message => {
   console.log(message); // Outputs 'Hello from webworker'
