@@ -9,7 +9,7 @@ import { HashWorkerMessage } from '../../hash-worker.types';
 })
 export class LogLineComponent implements OnInit {
   @Input() message: HashWorkerMessage;
-  @Input() files: string[];
+  @Input() files: string[] = [];
 
   public color: string;
 
