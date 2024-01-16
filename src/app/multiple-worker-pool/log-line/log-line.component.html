@@ -1,8 +1,10 @@
-<span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss.SSS' }}</span>
-<span class="timedelta" *ngIf="message.millisSinceLast !== null; else nodelta">
-  +{{ message.millisSinceLast / 1000 | number: '1.3-3' }}s
-</span>
-<ng-template #nodelta><span class="timedelta"></span></ng-template>
-<span class="file" [style.background-color]="color">{{ message.file }}</span>
-<span class="thread {{ message.thread }}">[{{ message.thread }}]</span>
-<span class="message">{{ message.message }}</span>
+<ng-container *ngIf="message">
+  <span class="timestamp">{{ message.timestamp | date: 'HH:mm:ss.SSS' }}</span>
+  <span class="timedelta" *ngIf="message.millisSinceLast !== null; else nodelta">
+    +{{ message.millisSinceLast / 1000 | number: '1.3-3' }}s
+  </span>
+  <ng-template #nodelta><span class="timedelta"></span></ng-template>
+  <span class="file" [style.background-color]="color">{{ message.file }}</span>
+  <span class="thread {{ message.thread }}">[{{ message.thread }}]</span>
+  <span class="message">{{ message.message }}</span>
+</ng-container>

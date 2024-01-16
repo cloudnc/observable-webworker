@@ -1,18 +1,13 @@
 // BETTERER RESULTS V1.
 exports[`stricter compilation`] = {
-  timestamp: 1619240872304,
+  timestamp: 1705378026461,
   value: `{
-    "node_modules/@types/jasmine/index.d.ts:2472745569": [
-      [669, 14, 16, "Interface \'FunctionMatchers<Fn>\' incorrectly extends interface \'Matchers<any>\'.\\n  The types returned by \'toHaveBeenCalledWith(...)\' are incompatible between these types.\\n    Type \'boolean\' is not assignable to type \'Promise<void>\'.", "2718731728"]
-    ],
     "src/app/google-charts.service.ts:1308226900": [
       [3, 29, 15, "Could not find a declaration file for module \'google-charts\'. \'./node_modules/google-charts/dist/googleCharts.js\' implicitly has an \'any\' type.\\n  Try \`npm i --save-dev @types/google-charts\` if it exists or add a new declaration (.d.ts) file containing \`declare module \'google-charts\';\`", "2535818334"]
     ],
-    "src/app/multiple-worker-pool/log-line/log-line.component.ts:1269916813": [
+    "src/app/multiple-worker-pool/log-line/log-line.component.ts:1179533322": [
       [10, 11, 7, "Property \'message\' has no initializer and is not definitely assigned in the constructor.", "1236122734"],
-      [11, 11, 5, "Property \'files\' has no initializer and is not definitely assigned in the constructor.", "171232592"],
-      [13, 9, 5, "Property \'color\' has no initializer and is not definitely assigned in the constructor.", "176948952"],
-      [18, 44, 17, "Argument of type \'string | undefined\' is not assignable to parameter of type \'string\'.\\n  Type \'undefined\' is not assignable to type \'string\'.", "463397358"]
+      [13, 9, 5, "Property \'color\' has no initializer and is not definitely assigned in the constructor.", "176948952"]
     ],
     "src/app/multiple-worker-pool/multiple-worker-pool.component.ts:816086637": [
       [90, 9, 14, "Type \'Observable<{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]>\' is not assignable to type \'Observable<HashWorkerMessage[]>\'.\\n  Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }[]\' is not assignable to type \'HashWorkerMessage[]\'.\\n    Type \'{ millisSinceLast: number | null; file?: string | undefined; timestamp: Date; message: string; thread: Thread; fileEventType: FileHashEvent | null; }\' is not assignable to type \'HashWorkerMessage\'.\\n      Types of property \'millisSinceLast\' are incompatible.\\n        Type \'number | null\' is not assignable to type \'number | undefined\'.\\n          Type \'null\' is not assignable to type \'number | undefined\'.", "463576723"]
