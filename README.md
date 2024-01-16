@@ -120,6 +120,7 @@ runWorker(HelloWorker);
 ```
 
 #### Decorator deprecation notice
+
 Future versions of webpack (Webpack 5) minify webworkers overly aggressively, causing
 the `@ObservableWorker()` decorator pattern to no longer function. This decorator
 has now been deprecated, and will be removed in the next major version of this library.
