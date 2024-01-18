@@ -34,6 +34,7 @@ jobs:
         with:
           fail_ci_if_error: true # optional (default = false)
           directory: coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Build
         run: yarn lib:build:prod
       - name: Incremental code quality checking
