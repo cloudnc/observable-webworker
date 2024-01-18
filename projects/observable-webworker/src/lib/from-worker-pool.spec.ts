@@ -4,8 +4,6 @@ import { Notification } from 'rxjs/internal/Notification';
 import { reduce } from 'rxjs/operators';
 import { fromWorkerPool } from './from-worker-pool';
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 describe('fromWorkerPool', () => {
   let stubbedWorkers: Worker[];
 
