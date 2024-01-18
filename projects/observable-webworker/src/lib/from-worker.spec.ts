@@ -2,8 +2,6 @@ import { Observable, Observer, of, Subject } from 'rxjs';
 import { Notification } from 'rxjs/internal/Notification';
 import { fromWorker } from './from-worker';
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 describe('fromWorker', () => {
   let input$: Subject<number>;
 
