@@ -15,6 +15,7 @@ export function fromWorker<Input, Output>(
   return new Observable((responseObserver: Observer<Notification<Output>>) => {
     let worker: Worker;
     let subscription: Subscription;
+    let error: Error = undefined
 
     try {
       worker = workerFactory();
@@ -25,7 +26,7 @@ export function fromWorker<Input, Output>(
         .pipe(
           materialize(),
           tap(input => {
-            if (selectTransferables && input.hasValue) {
+            if (selectTransferables && input.kind === 'N') {
               const transferables = selectTransferables(input.value as Input);
               worker.postMessage(input, transferables);
             } else {
@@ -34,8 +35,14 @@ export function fromWorker<Input, Output>(
           }),
         )
         .subscribe();
-    } catch (error) {
-      responseObserver.error(error);
+    } catch (e) {
+      error = e
+    } finally {
+      if (error)
+        responseObserver.error(error);
+      } else {
+        responseObserver.complete();
+      }
     }
 
     return () => {
