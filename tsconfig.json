@@ -14,8 +14,7 @@
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2018", "dom"],
     "paths": {
-      "observable-webworker": ["dist/observable-webworker"],
-      "observable-webworker/*": ["dist/observable-webworker/*"]
+      "observable-webworker": ["projects/observable-webworker/src/public-api"]
     },
     "useDefineForClassFields": false
   }
