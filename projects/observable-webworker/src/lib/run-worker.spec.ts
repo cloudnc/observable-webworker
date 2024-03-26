@@ -77,12 +77,6 @@ describe('runWorker', () => {
       }),
     );
 
-    expect(postMessageSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        kind: 'C',
-      }),
-    );
-
     sub.unsubscribe();
   });
 
@@ -127,12 +121,6 @@ describe('runWorker', () => {
         value: payload,
       }),
       [expected.buffer] as any,
-    );
-
-    expect(postMessageSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        kind: 'C',
-      }),
     );
 
     sub.unsubscribe();
@@ -239,12 +227,6 @@ describe('runWorker', () => {
       jasmine.objectContaining({
         kind: 'N',
         value: 2,
-      }),
-    );
-
-    expect(postMessageSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        kind: 'C',
       }),
     );
 

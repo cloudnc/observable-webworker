@@ -25,13 +25,15 @@ export function getWorkerResult<I, O>(
   incomingMessages$: Observable<WorkerMessageNotification<I>>,
 ): Observable<Notification<O>> {
   const input$ = incomingMessages$.pipe(
-    map((e: WorkerMessageNotification<I>): Notification<I> => e.data),
-    map((n: Notification<I>) => new Notification(n.kind, n.value, n.error)),
+    map(
+      (e: WorkerMessageNotification<I>): Notification<I> => new Notification(e.data.kind, e.data.value, e.data.error),
+    ),
     dematerialize(),
   );
 
   return workerIsUnitType(worker)
-    ? input$.pipe(concatMap(input => from(worker.workUnit(input)).pipe(materialize())))
+    ? // note we intentionally materialize the inner observable so the main thread can reassemble the multiple stream values per input observable
+      input$.pipe(concatMap(input => from(worker.workUnit(input)).pipe(materialize())))
     : worker.work(input$).pipe(materialize());
 }
 

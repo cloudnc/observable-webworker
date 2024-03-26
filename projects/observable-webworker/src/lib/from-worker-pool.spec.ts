@@ -60,6 +60,17 @@ describe('fromWorkerPool', () => {
       sub.unsubscribe();
     });
 
+    it('does not send input close notification to ensure the workers are kept alive', () => {
+      const subscriptionSpy = jasmine.createSpy('subscriptionSpy');
+      const sub = stubbedWorkerStream.subscribe(subscriptionSpy);
+
+      input$.next(1);
+
+      expect(stubbedWorkers[0].postMessage).not.toHaveBeenCalledWith(jasmine.objectContaining({ kind: 'C' }));
+
+      sub.unsubscribe();
+    });
+
     it('shuts down workers when subscriber unsubscribes', () => {
       const subscriptionSpy = jasmine.createSpy('subscriptionSpy');
       const sub = stubbedWorkerStream.subscribe(subscriptionSpy);
