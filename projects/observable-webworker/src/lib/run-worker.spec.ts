@@ -1,5 +1,6 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject, Notification, Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   DoTransferableWork,
   DoTransferableWorkUnit,
@@ -76,12 +77,6 @@ describe('runWorker', () => {
       }),
     );
 
-    expect(postMessageSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        kind: 'C',
-      }),
-    );
-
     sub.unsubscribe();
   });
 
@@ -128,13 +123,51 @@ describe('runWorker', () => {
       [expected.buffer] as any,
     );
 
+    sub.unsubscribe();
+  });
+
+  // https://github.com/cloudnc/observable-webworker/issues/116
+  it('should complete the notification stream when the worker completes', () => {
+    const postMessageSpy = spyOn(window, 'postMessage');
+    postMessageSpy.calls.reset();
+
+    class TestWorker implements DoWork<number, number> {
+      public work(input$: Observable<number>): Observable<number> {
+        // here nothing should keep the subscription alive when input$ completes
+        return input$.pipe(map(input => input * 2));
+      }
+    }
+
+    const sub = runWorker(TestWorker);
+
+    const notificationEvent: WorkerMessageNotification<number> = new MessageEvent('message', {
+      data: new Notification('N', 10),
+    });
+
+    self.dispatchEvent(notificationEvent);
+
+    expect(postMessageSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        kind: 'N',
+        value: 20,
+      }),
+    );
+
+    const completeEvent: WorkerMessageNotification<number> = new MessageEvent('message', {
+      data: new Notification('C'),
+    });
+
+    self.dispatchEvent(completeEvent);
+
     expect(postMessageSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
         kind: 'C',
       }),
     );
 
-    sub.unsubscribe();
+    // do note here that instead of manually closing the subscription
+    // we check it's already closed as expected
+    expect(sub.closed).toBeTrue();
   });
 
   it('should not complete the notification stream if the worker does not complete', () => {
@@ -194,12 +227,6 @@ describe('runWorker', () => {
       jasmine.objectContaining({
         kind: 'N',
         value: 2,
-      }),
-    );
-
-    expect(postMessageSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        kind: 'C',
       }),
     );
 

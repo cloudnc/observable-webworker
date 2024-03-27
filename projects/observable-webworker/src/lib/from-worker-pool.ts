@@ -1,4 +1,4 @@
-import { Observable, ObservableInput, of, Subject, zip } from 'rxjs';
+import { concat, NEVER, Observable, ObservableInput, of, Subject, zip } from 'rxjs';
 import { finalize, map, mergeAll, tap } from 'rxjs/operators';
 import { fromWorker } from './from-worker';
 
@@ -69,7 +69,11 @@ export function fromWorkerPool<I, O>(
       }),
       map(
         ([worker, unitWork]): Observable<O> => {
-          return fromWorker<I, O>(() => worker.factory(), of(unitWork), selectTransferables, {
+          // input should not complete to ensure the worker doesn't send back completion notifications when work unit is
+          // processed, otherwise these would cause the fromWorker to unsubscribe from the result.
+          const input$ = concat(of(unitWork), NEVER);
+          // const input$ = of(unitWork);
+          return fromWorker<I, O>(() => worker.factory(), input$, selectTransferables, {
             terminateOnComplete: false,
           }).pipe(
             finalize(() => {

@@ -1,5 +1,5 @@
 import { from, fromEvent, Notification, Observable, Subscription } from 'rxjs';
-import { concatMap, dematerialize, filter, map, materialize } from 'rxjs/operators';
+import { concatMap, dematerialize, map, materialize } from 'rxjs/operators';
 import { DoTransferableWork, DoWork, DoWorkUnit, WorkerMessageNotification } from './observable-worker.types';
 
 export type ObservableWorkerConstructor<I = any, O = any> = new (...args: any[]) => DoWork<I, O> | DoWorkUnit<I, O>;
@@ -25,15 +25,15 @@ export function getWorkerResult<I, O>(
   incomingMessages$: Observable<WorkerMessageNotification<I>>,
 ): Observable<Notification<O>> {
   const input$ = incomingMessages$.pipe(
-    map((e: WorkerMessageNotification<I>): Notification<I> => e.data),
-    map((n: Notification<I>) => new Notification(n.kind, n.value, n.error)),
-    // ignore complete, the calling thread will manage termination of the stream
-    filter(n => n.kind !== 'C'),
+    map(
+      (e: WorkerMessageNotification<I>): Notification<I> => new Notification(e.data.kind, e.data.value, e.data.error),
+    ),
     dematerialize(),
   );
 
   return workerIsUnitType(worker)
-    ? input$.pipe(concatMap(input => from(worker.workUnit(input)).pipe(materialize())))
+    ? // note we intentionally materialize the inner observable so the main thread can reassemble the multiple stream values per input observable
+      input$.pipe(concatMap(input => from(worker.workUnit(input)).pipe(materialize())))
     : worker.work(input$).pipe(materialize());
 }
 
